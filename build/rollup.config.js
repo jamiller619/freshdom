@@ -3,6 +3,8 @@ import babel from 'rollup-plugin-babel'
 import babelMinify from 'rollup-plugin-babel-minify'
 import commonjs from 'rollup-plugin-commonjs'
 import cleanup from 'rollup-plugin-cleanup'
+import copy from 'rollup-plugin-copy'
+
 import banner from './banner'
 
 const config = {}
@@ -27,7 +29,9 @@ const modules = [
 
 const pluginDefs = [resolve(), commonjs(), babel({
   exclude: 'node_modules/**'
-}), cleanup()]
+}), cleanup(), copy({
+  './LICENSE': './dist/LICENSE'
+})]
 
 const make = (module, minify = false) => {
   const plugins = minify
