@@ -1,3 +1,5 @@
+import fs from 'fs-extra'
+import path from 'path'
 import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import babelMinify from 'rollup-plugin-babel-minify'
@@ -9,21 +11,27 @@ import banner from './banner'
 
 const config = {}
 
-const pathDev = file => `./lib/${ file }`
-const pathDist = file => `./dist/${ file }`
+const ROOT = path.join(__dirname, '../')
+const ROOT_DIST = path.join(ROOT, 'dist')
+const ROOT_DEV = path.join(ROOT, 'lib')
+
+fs.ensureDirSync(ROOT_DIST)
+
+const pdev = file => path.join(ROOT_DEV, file)
+const pdist = file => path.join(ROOT_DIST, file)
 
 const modules = [
   {
     name: 'jasmin',
-    source: pathDev('jasmin.js')
+    source: pdev('jasmin.js')
   },
   {
     name: 'router',
-    source: pathDev('router/index.js')
+    source: pdev('router/index.js')
   },
   {
     name: 'store',
-    source: pathDev('store/index.js')
+    source: pdev('store/index.js')
   }
 ]
 
@@ -43,7 +51,7 @@ const make = (module, minify = false) => {
   return {
     input: module.source,
     output: {
-      file: `${ pathDist(module.name) }${ minify ? '.min' : '' }.js`,
+      file: `${ pdist(module.name) }${ minify ? '.min' : '' }.js`,
       format: 'cjs'
     },
     plugins: plugins,
