@@ -13,7 +13,7 @@ or:
 yarn add jasmin
 ```
 
-# API (Coming Soon)
+## API (Coming Soon)
 
 ---
 
