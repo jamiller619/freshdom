@@ -1,5 +1,5 @@
 ![jasmin](https://jamiller.me/static/jasmin-logo.jpg)
-> A Web Components library for building UI on the modern web
+> A library for creating standards-based UI on the modern web
 
 ## Usage
 
