@@ -1,17 +1,8 @@
 ![jasmin](https://jamiller.me/static/jasmin-logo.jpg)
 > A library for creating standards-based UI on the modern web
 
-## Usage
-
-```sh
-npm i --save-dev jasmin
-```
-
-or:
-
-```sh
-yarn add jasmin
-```
+## Install
+via [npm][npm-url] or [yarn][yarn-url] as the `jasmin` package
 
 ## API (Coming Soon)
 
@@ -26,4 +17,5 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 <!-- Markdown link & img dfn's -->
 [npm-image]: https://img.shields.io/npm/v/blingjs.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/jasmin
+[yarn-url]: https://yarnpkg.com/en/package/jasmin
 [npm-downloads]: https://img.shields.io/npm/dw/jasmin.svg?style=flat-square
