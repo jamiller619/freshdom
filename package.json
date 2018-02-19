@@ -1,5 +1,5 @@
 {
-  "name": "jasmin",
+  "name": "freshjs",
   "version": "0.0.1",
   "description": "A library for creating standards-based UI on the modern web",
   "main": "lib/index.js",
@@ -10,12 +10,12 @@
     "twitter": "jamiller619"
   },
   "license": "MIT",
-  "repository": "https://github.com/jamiller619/jasmin.git",
+  "repository": "https://github.com/jamiller619/fresh.git",
   "scripts": {
-    "build": "build-readme rollup -c build/rollup.config.js --environment config:default",
+    "build": "rollup -c build/rollup.config.js --environment config:default",
     "build-min": "rollup -c build/rollup.config.js --environment config:minify",
     "watch": "rollup -c build/rollup.config.js --environment config:default --watch",
-    "build-readme": "mustache package.json lib/README.mustache > README.md"
+    "build-readme": "mustache package.json build/README.mustache > README.md"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
