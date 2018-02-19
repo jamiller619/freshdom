@@ -22,8 +22,8 @@ const pdist = file => path.join(ROOT_DIST, file)
 
 const modules = [
   {
-    name: 'jasmin',
-    source: pdev('jasmin.js')
+    name: 'fresh',
+    source: pdev('fresh.js')
   },
   {
     name: 'router',
@@ -32,6 +32,10 @@ const modules = [
   {
     name: 'store',
     source: pdev('store/index.js')
+  },
+  {
+    name: 'elements',
+    source: pdev('elements/index.js')
   }
 ]
 
