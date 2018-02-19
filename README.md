@@ -1,8 +1,8 @@
 ![fresh](https://jamiller.me/static/fresh-logo.png)
-> A library for creating standards-based UI on the modern web
+> A JavaScript library for creating UI on the modern web via Web Components.
 
 ## Install
-via [npm][npm-url] or [yarn][yarn-url] as the `fresh` package
+via [npm][npm-url] or [yarn][yarn-url] as the `freshjs` package
 
 ## API (Coming Soon)
 

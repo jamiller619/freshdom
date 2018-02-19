@@ -1,7 +1,7 @@
 {
   "name": "freshjs",
   "version": "0.0.1",
-  "description": "A library for creating standards-based UI on the modern web",
+  "description": "A JavaScript library for creating UI on the modern web via Web Components.",
   "main": "lib/index.js",
   "author": {
     "name": "Jeff Miller",
