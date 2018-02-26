@@ -39,23 +39,32 @@ const modules = [
   }
 ]
 
-const pluginDefs = [resolve(), commonjs(), babel({
-  exclude: 'node_modules/**'
-}), cleanup(), copy({
-  './LICENSE': './dist/LICENSE'
-})]
+const pluginDefs = [
+  resolve(),
+  commonjs(),
+  babel({
+    exclude: 'node_modules/**'
+  }),
+  cleanup(),
+  copy({
+    './LICENSE': './dist/LICENSE'
+  })
+]
 
 const make = (module, minify = false) => {
   const plugins = minify
-    ? [...pluginDefs, babelMinify({ 
-        comments: false
-      })]
+    ? [
+        ...pluginDefs,
+        babelMinify({
+          comments: false
+        })
+      ]
     : pluginDefs
 
   return {
     input: module.source,
     output: {
-      file: `${ pdist(module.name) }${ minify ? '.min' : '' }.js`,
+      file: `${pdist(module.name)}${minify ? '.min' : ''}.js`,
       format: 'cjs'
     },
     plugins: plugins,

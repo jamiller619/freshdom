@@ -2,7 +2,7 @@ import pkg from '../package.json'
 
 export default `
 /**
- * fresh v${ pkg.version }
+ * fresh v${pkg.version}
  *
  * Copyright (c) 2017-2018, Jeff Miller, jamiller.me
  * All rights reserved.
