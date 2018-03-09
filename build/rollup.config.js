@@ -17,25 +17,28 @@ const ROOT_DEV = path.join(ROOT, 'lib')
 
 fs.ensureDirSync(ROOT_DIST)
 
-const pdev = file => path.join(ROOT_DEV, file)
-const pdist = file => path.join(ROOT_DIST, file)
+const dev = file => path.join(ROOT_DEV, file)
+const dist = file => path.join(ROOT_DIST, file)
+
+// TODO: Add splitter for modules
+// Had to add the Router module to Core...
 
 const modules = [
   {
     name: 'fresh',
-    source: pdev('fresh.js')
+    source: dev('index.js')
   },
-  {
-    name: 'router',
-    source: pdev('router/index.js')
-  },
+  // {
+  //   name: 'router',
+  //   source: dev('router/index.js')
+  // },
   {
     name: 'store',
-    source: pdev('store/index.js')
+    source: dev('store/index.js')
   },
   {
     name: 'elements',
-    source: pdev('elements/index.js')
+    source: dev('elements/index.js')
   }
 ]
 
@@ -64,11 +67,11 @@ const make = (module, minify = false) => {
   return {
     input: module.source,
     output: {
-      file: `${pdist(module.name)}${minify ? '.min' : ''}.js`,
+      banner: banner,
+      file: `${dist(module.name)}${minify ? '.min' : ''}.js`,
       format: 'cjs'
     },
     plugins: plugins,
-    banner: banner,
     interop: false
   }
 }
