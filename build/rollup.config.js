@@ -23,24 +23,21 @@ const dist = file => path.join(ROOT_DIST, file)
 // TODO: Add splitter for modules
 // Had to add the Router module to Core...
 
-const modules = [
-  {
-    name: 'fresh',
-    source: dev('index.js')
-  },
-  // {
-  //   name: 'router',
-  //   source: dev('router/index.js')
-  // },
-  {
-    name: 'store',
-    source: dev('store/index.js')
-  },
-  {
-    name: 'elements',
-    source: dev('elements/index.js')
-  }
-]
+const modules = [{
+  name: 'fresh',
+  source: dev('index.js')
+},
+// {
+//   name: 'router',
+//   source: dev('router/index.js')
+// },
+{
+  name: 'store',
+  source: dev('store/index.js')
+}, {
+  name: 'elements',
+  source: dev('elements/index.js')
+}]
 
 const pluginDefs = [
   resolve(),
