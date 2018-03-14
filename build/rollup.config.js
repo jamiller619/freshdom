@@ -6,7 +6,6 @@ import babelMinify from 'rollup-plugin-babel-minify'
 import commonjs from 'rollup-plugin-commonjs'
 import cleanup from 'rollup-plugin-cleanup'
 import copy from 'rollup-plugin-copy'
-
 import banner from './banner'
 
 const config = {}
@@ -20,27 +19,38 @@ fs.ensureDirSync(ROOT_DIST)
 const dev = file => path.join(ROOT_DEV, file)
 const dist = file => path.join(ROOT_DIST, file)
 
-// TODO: Add splitter for modules
-// Had to add the Router module to Core...
+/**
+ * TODO: Implement a method of bundling that
+ * will prevent duplicated modules by requiring
+ * a reference to a "core" library of shared modules
+ *
+ * NOTE: Tree shaking could possibly resolve this...
+ */
+// const modules = [{
+//   name: 'fresh',
+//   source: dev('index.js')
+// }, {
+//   name: 'router',
+//   source: dev('router/index.js')
+// }, {
+//   name: 'store',
+//   source: dev('store/index.js')
+// }, {
+//   name: 'elements',
+//   source: dev('elements/index.js')
+// }]
 
 const modules = [{
   name: 'fresh',
   source: dev('index.js')
-},
-// {
-//   name: 'router',
-//   source: dev('router/index.js')
-// },
-{
-  name: 'store',
-  source: dev('store/index.js')
-}, {
-  name: 'elements',
-  source: dev('elements/index.js')
 }]
 
 const pluginDefs = [
-  resolve(),
+  resolve({
+    customResolveOptions: {
+      moduleDirectory: 'node_modules'
+    }
+  }),
   commonjs(),
   babel({
     exclude: 'node_modules/**'
@@ -51,6 +61,10 @@ const pluginDefs = [
   })
 ]
 
+/**
+ * TODO: create separate module for polyfill
+ * since it's not always needed or necessary
+ */
 const make = (module, minify = false) => {
   const plugins = minify
     ? [
@@ -69,11 +83,12 @@ const make = (module, minify = false) => {
       format: 'cjs'
     },
     plugins: plugins,
-    interop: false
+    interop: false,
+    external: ['fastdom']
   }
 }
 
-config.default = modules.map(module => make(module))
-config.minify = modules.map(module => make(module, true))
+config.dev = modules.map(module => make(module))
+config.prod = modules.map(module => make(module, true))
 
 export default config[process.env.config]
