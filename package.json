@@ -23,6 +23,7 @@
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.6.1",
+    "fastdom": "^1.0.8",
     "fs-extra": "^5.0.0",
     "merge-options": "^1.0.0",
     "morphdom": "^2.3.3",
@@ -35,8 +36,5 @@
     "rollup-plugin-copy": "^0.2.3",
     "rollup-plugin-node-resolve": "^3.0.0",
     "url-pattern": "^1.0.3"
-  },
-  "peerDependencies": {
-    "fastdom": "^1.0.6"
   }
 }
