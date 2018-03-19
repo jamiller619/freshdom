@@ -1,7 +1,7 @@
 {
   "name": "freshdom",
   "version": "0.0.5",
-  "description": "A JavaScript library for creating UI on the modern web via Web Components.",
+  "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
   "main": "lib/index.js",
   "author": {
     "name": "Jeff Miller",
@@ -12,11 +12,10 @@
   "license": "MIT",
   "repository": "https://github.com/jamiller619/freshdom.git",
   "scripts": {
-    "build": "npm run build-dev && npm run build-prod && npm run build-readme",
+    "build": "npm run build-dev && npm run build-prod",
     "watch": "rollup -c build/rollup.config.js --environment config:dev --watch",
     "build-dev": "rollup -c build/rollup.config.js --environment config:dev",
     "build-prod": "rollup -c build/rollup.config.js --environment config:prod",
-    "build-readme": "mustache package.json build/README.mustache > README.md && mustache package.json build/README.mustache > dist/README.md",
     "publish": "npm version patch && cd dist && npm version patch && npm publish"
   },
   "devDependencies": {
@@ -26,9 +25,7 @@
     "babel-preset-env": "^1.6.1",
     "fastdom": "^1.0.8",
     "fs-extra": "^5.0.0",
-    "merge-options": "^1.0.0",
     "morphdom": "^2.3.3",
-    "mustache": "^2.3.0",
     "prettier": "^1.11.1",
     "rollup": "^0.56.3",
     "rollup-plugin-babel": "^3.0.2",

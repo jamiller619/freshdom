@@ -57,7 +57,8 @@ const pluginDefs = [
   }),
   cleanup(),
   copy({
-    './LICENSE': './dist/LICENSE'
+    './LICENSE': './dist/LICENSE',
+    './README.md': './dist/README.md'
   })
 ]
 
