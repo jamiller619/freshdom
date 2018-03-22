@@ -1,0 +1,20 @@
+{
+  "name": "freshdom",
+  "version": "0.0.5",
+  "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
+  "main": "fresh.js",
+  "module": "fresh.js",
+  "author": {
+    "name": "Jeff Miller",
+    "website": "https://jamiller.me",
+    "email": "hello@jamiller.me"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamiller619/freshdom.git"
+  },
+  "peerDependencies": {
+    "fastdom": "^1.0.8"
+  }
+}

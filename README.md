@@ -1,9 +1,15 @@
 ![freshdom](https://jamiller.me/static/fresh-logo.jpg)
 <p>
-  [![badge-better-code-hub]][url-bch]
-  [![badge-npm]][url-npm]
-  [![badge-npm-downloads]][url-npm]
-  ![badge-license]
+  <a href="https://bettercodehub.com/results/jamiller619/freshdom">
+    <img src="https://bettercodehub.com/edge/badge/jamiller619/freshdom?branch=master&style=flat-square" />
+  </a>
+  <a href="https://npmjs.org/package/freshdom">
+    <img src="https://img.shields.io/npm/v/freshdom.svg?style=flat-square" />
+  </a>
+  <a href="https://npmjs.org/package/freshdom">
+    <img src="https://img.shields.io/npm/dw/freshdom.svg?style=flat-square" />
+  </a>
+  <img src="https://img.shields.io/github/license/jamiller619/freshdom.svg?style=flat-square" />
 </p>
 A fresh approach to creating modern user interfaces on the web with a focus on standards.
 
@@ -26,8 +32,3 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 <!-- Markdown link & img dfn's -->
 [url-npm]: https://npmjs.org/package/freshdom
 [url-yarn]: https://yarnpkg.com/en/package/freshdom
-[url-bch]: https://bettercodehub.com/results/jamiller619/freshdom
-[badge-npm]: https://img.shields.io/npm/v/freshdom.svg?style=flat-square
-[badge-npm-downloads]: https://img.shields.io/npm/dw/freshdom.svg?style=flat-square
-[badge-better-code-hub]: https://bettercodehub.com/edge/badge/jamiller619/freshdom?branch=master&style=flat-square
-[badge-license]: https://img.shields.io/github/license/jamiller619/freshdom.svg?style=flat-square
