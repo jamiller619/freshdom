@@ -1,7 +1,7 @@
+import fresh from '../core/fresh'
 import fd from '../helpers/fastdom'
-import make from '../FreshMaker'
-import {trigger} from '../element/events'
 import router from './router'
+import {trigger} from '../core/events'
 
 const routerEventTypes = {
   onRouteBeforeAttach: 'onRouteBeforeAttach',
@@ -10,31 +10,36 @@ const routerEventTypes = {
   onRouteDetach: 'onRouteDetach'
 }
 
-export default make('fresh-route', {
+export default fresh('fresh-route', {
   onAttach() {
-    const {path, renders, controller} = this.props
-    this.$container = this.parentNode
+    this.empty()
 
-    this.remove()
+    const {path, renders, controller} = this.props
 
     if (controller) {
       const routeConfig = typeof controller === 'function' && controller() || controller
       Object.keys(routeConfig).map(path => {
         router.on(path, routeProps => {
-          this.render(routeConfig[path](routeProps))
+          this.onRouterUpdate(routeConfig[path](routeProps))
         })
       })
     } else {
       router.on(path, routeProps => {
-        this.render(renders)
+        this.onRouterUpdate(renders)
       })
     }
   },
 
-  async render(el) {
-    const elementLeaving = this.$container.firstElementChild
+  empty() {
+    while(this.hasChildNodes()) {
+      this.removeChild(this.lastChild)
+    }
+  },
+
+  async onRouterUpdate(el) {
+    const elementLeaving = this.firstElementChild
     await trigger(this, routerEventTypes.onRouteBeforeAttach, el, elementLeaving)
-    await fd.mutate(() => this.$container.appendChild(el))
+    await fd.mutate(() => this.appendChild(el))
     await trigger(this, routerEventTypes.onRouteAttach, el, elementLeaving)
 
     if (elementLeaving) {

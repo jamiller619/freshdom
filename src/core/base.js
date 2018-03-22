@@ -10,20 +10,24 @@ const TYPE = Symbol('fresh.element')
  * Custom Elements lifecycle events API defined below
  */
 const FreshBase = {
-  $$__typeof: TYPE,
-  isAttached: false
+  $$__typeof: TYPE
 }
+
+Object.defineProperties(FreshBase, {
+  isAttached: {
+    writable: true,
+    value: false
+  }
+})
 
 /**
  * Custom Elements API
  * Only official API methods/implementation should reside here
  */
 const CustomElementBase = {
-  constructor() {},
-
   async connectedCallback() {
     await trigger(this, eventTypes.onBeforeAttach)
-    renderContext(this)
+    await renderContent(this)
     this.isAttached = true
     trigger(this, eventTypes.onAttach)
   },
@@ -46,15 +50,22 @@ Object.defineProperty(CustomElementBase.constructor, 'observedAttributes', {
 })
 
 /**
- * Base Renderer: Renders and merge new view state context. 
- * Defined outside Base to keep private
+ * @void Base Renderer
+ *
+ * Renders and assigns value of the `content`
+ * property on the element.
+ *
+ * Defined outside Base for privacy,
+ * for whatever that's worth.
+ * 
+ * @param {CustomElementBase} context: `this` context
  *
  * @async
  */
-const renderContext = async context => {
+const renderContent = async context => {
   await trigger(context, eventTypes.onBeforeRender)
   if (context.render && typeof context.render === 'function') {
-    await renderNode(context.render.call(this), context)
+    await renderNode(context.render.call(context), context)
   }
   trigger(context, eventTypes.render)
 }
