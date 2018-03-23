@@ -1,5 +1,3 @@
-import uniqid from 'uniqid'
-
 /**
  * Our global store object as a Map
  */
@@ -30,7 +28,7 @@ const record = (name, targetConstructor, extendsType) => {
     return targetConstructor
   }
 
-  const id = uniqid.process('f-')
+  const id = uniqid('f-')
   name = name || id
 
   Object.defineProperty(targetConstructor, '$$__f', {
@@ -41,6 +39,24 @@ const record = (name, targetConstructor, extendsType) => {
   window.customElements.define(name, targetConstructor)
 
   return targetConstructor
+}
+
+/**
+ * Generates a unique id based on the time.
+ * Adapted from npm package `uniqid`
+ *
+ * @param {string} prefix: Optional prefix to prepend to the resulting id
+ * @return {string} Returns a unique id
+ */
+const uniqid = prefix => {
+  return (prefix || '') + now().toString(36)
+}
+
+// Helper function for uniqid
+const now = () => {
+  const time = Date.now()
+  const last = now.last || time
+  return now.last = time > last ? time : last + 1
 }
 
 export {
