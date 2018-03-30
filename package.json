@@ -2,7 +2,7 @@
   "name": "freshdom",
   "version": "0.0.5",
   "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
-  "main": "src/fresh.js",
+  "main": "packages/freshdom",
   "author": {
     "name": "Jeff Miller",
     "website": "https://jamiller.me",
@@ -12,8 +12,8 @@
   "license": "MIT",
   "repository": "https://github.com/jamiller619/freshdom.git",
   "scripts": {
-    "build": "node build/main.js && rollup -c build/rollup.config.js",
-    "dev": "rollup -c build/rollup.config.js -w",
+    "build": "node scripts/build.js && rollup -c scripts/rollup.config.js",
+    "dev": "rollup -c scripts/rollup.config.js -w",
     "publish": "npm version patch && cd dist && npm version patch && npm publish"
   },
   "devDependencies": {
