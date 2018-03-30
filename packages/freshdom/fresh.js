@@ -3,4 +3,6 @@ import fresh from './core/fresh'
 
 Object.setPrototypeOf(fresh, Object.create({createElement}))
 
-export default fresh
+export {
+  fresh as default
+}

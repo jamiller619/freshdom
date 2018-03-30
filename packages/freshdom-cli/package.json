@@ -1,0 +1,20 @@
+{
+  "name": "freshdom-cli",
+  "version": "0.0.2",
+  "description": "freshdom cli for processing single file components",
+  "main": "main.js",
+  "bin": {
+    "freshdom": "main.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.3.2",
+    "filehound": "^1.16.2",
+    "fs-extra": "^5.0.0",
+    "parse5": "^4.0.0"
+  },
+  "peerDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1"
+  }
+}

@@ -18,10 +18,10 @@ const store = window.$$__f
  *
  * @param {string} name: The valid name of the element
  * @param {Function} targetConstructor: The element's constructor function
- * @param {string} extendsType: The element's tag name used to extend this element
+ * @param {string} inherits: The element's tag name used to extend this element
  * @return {Boolean} Returns the modified constructor function
  */
-const record = (name, targetConstructor, extendsType) => {
+const record = (name, targetConstructor, inherits) => {
   if (targetConstructor.$$__f) {
     // I'm at least 90% sure that I'm 100% sure this can't happen...
     console.warn(`This element has already been recorded: ${targetConstructor.$$__f}`)
@@ -32,7 +32,7 @@ const record = (name, targetConstructor, extendsType) => {
   name = name || id
 
   Object.defineProperty(targetConstructor, '$$__f', {
-    value: { id, name, extendsType }
+    value: { id, name, inherits }
   })
 
   store.set(name, targetConstructor)

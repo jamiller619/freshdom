@@ -18,7 +18,7 @@ export default (dest, ...src) => {
 
   return src.reduce((acc, curr) => {
     return Object.defineProperties(
-      dest, 
+      acc, 
       Object.getOwnPropertyDescriptors(curr))
-  }, {})
+  }, dest)
 }

@@ -9,11 +9,11 @@ class Router {
     this.scrollRestoration = false
 
     window.addEventListener('popstate', e => {
-      if (e && e.state) this.__dispatch(e.state)
+      if (e && e.state) this.dispatch(e.state)
     })
 
     window.addEventListener('hashchange', () => {
-      this.__handleHashChangeEvent(location.hash)
+      this.handleHashChangeEvent(location.hash)
     })
 
     document.body.addEventListener('click', e => {
@@ -22,9 +22,9 @@ class Router {
         e.preventDefault()
         el.blur()
         if (el.hash) {
-          this.__handleHashChangeEvent(el.hash)
+          this.handleHashChangeEvent(el.hash)
         } else {
-          this.__pushState({
+          this.pushState({
             url: el.pathname
           })
         }
@@ -32,7 +32,7 @@ class Router {
     })
 
     document.addEventListener('DOMContentLoaded', () => {
-      this.__pushState({
+      this.pushState({
         url: window.location.pathname
       })
     })
@@ -40,10 +40,10 @@ class Router {
 
   on (...args) {
     if (args[0] && typeof args[0] === 'string') {
-      this.__saveRoute(args[0], args[1])
+      this.saveRoute(args[0], args[1])
     } else if (args[0] && typeof args[0] === 'object') {
       Object.entries(args[0]).map(e => {
-        this.__saveRoute(e[0], e[1])
+        this.saveRoute(e[0], e[1])
       })
     }
     return this
@@ -62,16 +62,16 @@ class Router {
     }
   }
 
-  __handleHashChangeEvent (hash) {
-    this.__dispatch({ url: hash })
+  handleHashChangeEvent (hash) {
+    this.dispatch({ url: hash })
     if (hash !== location.hash) {
       location.hash = hash
     }
   }
 
-  __dispatch (state) {
+  dispatch (state) {
     if (state && state.url && state.url !== '') {
-      const route = this.__findRoute(state.url)
+      const route = this.findRoute(state.url)
       if (route && route.action) {
         const params = route.url.match(state.url)
         Object.entries(params).forEach(([key, value]) => {
@@ -82,7 +82,7 @@ class Router {
     }
   }
 
-  __pushState (state = {}) {
+  pushState (state = {}) {
     if (state.url && state.url !== '') {
       if (window.history.state && window.history.state.url === state.url) {
         window.history.replaceState(state, '', state.url)
@@ -91,12 +91,12 @@ class Router {
         window.history.pushState(state, '', state.url)
       }
       this.history.push(state)
-      this.__dispatch(state)
+      this.dispatch(state)
     }
   }
 
-  __saveRoute (url, action) {
-    if (!this.__findRoute(url)) {
+  saveRoute (url, action) {
+    if (!this.findRoute(url)) {
       const route = {
         url: new UrlPattern(url),
         action: action
@@ -105,7 +105,7 @@ class Router {
     }
   }
 
-  __findRoute (url) {
+  findRoute (url) {
     return this.routes.find(route => {
       return url.match(route.url.regex)
     })

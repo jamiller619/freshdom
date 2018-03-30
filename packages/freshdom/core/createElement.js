@@ -111,7 +111,7 @@ const parseNodeType = (type, props) => {
   if (typeof type === 'string' && type.includes('-')) {
     const customElement =
       window.customElements.get(type) || document.createElement(type)
-    return container(ElementTypes.CUSTOM, createInstance(customElement, props))
+    return container(ElementTypes.CUSTOM, customElement)
   }
 
   // Element type: SVG
@@ -160,12 +160,13 @@ const renderChildNode = (childNode, container) => {
  * @param {Object} props The props being passed to the element.
  * @return {HTMLElement}
  */
-const createInstance = (func, props) => {
+const createInstance = (func, ...props) => {
   try {
-    return func(props)
+    return func(...props)
+    // return new (func(...props))()
   } catch (e) {
     try {
-      return new func(props)
+      return new func(...props)
     } catch (e) {
       throw new Error(`Unable to create element instance: ${e}`)
     }

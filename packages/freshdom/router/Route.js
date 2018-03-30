@@ -10,7 +10,7 @@ const routerEventTypes = {
   onRouteDetach: 'onRouteDetach'
 }
 
-export default fresh('fresh-route', {
+export default () => fresh('fresh-route', {
   onAttach() {
     this.empty()
 
