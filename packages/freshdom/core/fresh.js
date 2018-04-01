@@ -1,66 +1,108 @@
-import HTMLInterfaces from '../types/HTMLInterfaces'
-import Base from './base'
+// import HTMLInterfaces from '../types/HTMLInterfaces'
+import HTMLBase, {extend} from './HTMLBase'
 import {trigger, eventTypes} from './events'
-import registry, {record} from './registry'
+import registry from './registry'
 import merge from '../helpers/merge'
+import UID from './uid'
 
 /**
- * Entry point for creating Custom Element Components.
+ * Entry point for creating Custom Element Components
  *
- * Here, we simply parse the range of acceptable arguments
+ * Specifically, this function parses a range of
+ * arguments and returns a constructor function
+ * that has been defined with the CustomElementRegistry
  */
 export default (...args) => {
-  let name,
-    inherits = undefined
+  let name = undefined
+  let inherits = undefined
+
   const isUnnamedComponent = args.length === 1 || typeof args[0] === 'function'
   const isNamedComponent = !isUnnamedComponent
   const template = isUnnamedComponent && args.length === 2 ? args[1] : undefined
-  const component = parseComponentCallback(
-    isNamedComponent ? parseComponentDefinition(args[1]) : args[0]
+
+  const component = isNamedComponent ? args[1] : args[0]
+  const meta = parseComponentMeta(
+    isNamedComponent ? args[0] : undefined
   )
 
-  if (previouslyDefinedCheck(component)) {
-    return component
-  }
-
-  return make(
-    Object.assign(
-      { 
-        template
-      },
-      parseComponentCallback(
-        isNamedComponent ? parseComponentDefinition(args[1]) : args[0]
-      )
-    )
-  )
+  return previouslyDefinedCheck(meta.name) || make(component, meta)
 }
 
 /**
  * Creates a constructor function capable of producing Custom Elements.
  *
  * @param {function} component: The component as an object literal
- * @param {string} component.name: The element's name, or name and inherits
- * @param {string} name: The element's tag name
+ * @param {string} component.name: The element's tag name
+ * @param {HTMLElement} template: The element's template
  * @param {string} inherits: The element's tag name to extend from
  * @return {Function} The constructor function to create future instances
  */
-const make = (component = {}) => {
-  const {name, inherits, template} = component
-  class Fresh extends getHTMLInterface(inherits) {
-    constructor(...props) {
-      super()
-      if (component['constructor']) {
-        component['constructor'].call(this, ...props)
-      }
+const make = (component, meta) => {
+  // const {name, inherits, template} = meta
+  // const HTMLInterface = getHTMLInterface(inherits)
+
+  class Fresh extends HTMLBase((inst, props) => {
+    renderComponent(inst, component, props)
+    if (inst.init) {
+      inst.init(props)
     }
+  }) {}
+
+  initState(Fresh.prototype)
+
+  // Object.defineProperties(initState(Fresh.prototype), {
+  //   init: {
+  //     value(props) {
+  //       console.log(component.init)
+  //       const mergedComponent = renderComponent(Fresh.prototype, component, props)
+  //     }
+  //   }
+  // })
+
+  return registry.define(meta, Fresh)
+}
+
+/**
+ * Merge and instantiates a new component
+ *
+ * @param {HTMLElement} target: The host instance to merge into
+ * @param {object|function} component: The source component
+ * @param {object} props
+ * @return {HTMLElement} The merged result
+ */
+const renderComponent = (target, source, props) => {
+  return merge(target, typeof source === 'object'
+    ? source
+    : source.call(target, props)
+  )
+}
+
+/**
+ * Parses an options argument and returns the
+ * component's "meta" object
+ *
+ * @param {object|string} options
+ * @return {object}
+ */
+const parseComponentMeta = options => {
+  const uid = UID.create()
+  const meta = {
+    id: uid,
+    name: uid,
+    inherits: undefined
   }
 
-  Object.defineProperties(
-    initState(Fresh.prototype),
-    merge(Base, Object.getOwnPropertyDescriptors(component))
-  )
+  switch (typeof options) {
+    case 'object':
+      meta.name = options.name
+      meta.inherits = options.inherits
+      break
+    case 'string':
+      meta.name = options
+      break
+  }
 
-  return record(name, Fresh, inherits)
+  return meta
 }
 
 /**
@@ -71,27 +113,7 @@ const make = (component = {}) => {
  * @return {function|false} If the element was previously defined, return its constructor function, otherwise return false
  */
 const previouslyDefinedCheck = name => {
-  return name && registry.get(name) || false
-}
-
-/**
- * Parses a single "definition" argument and returns an object with
- * two properties, name and inherits
- *
- * @param {Object|string} definition
- * @return {Object}
- */
-const parseComponentDefinition = definition => {
-  if (typeof definition === 'object') {
-    return {
-      name: definition.name,
-      inherits: definition.inherits
-    }
-  }
-
-  return {
-    name: definition
-  }
+  return (name && registry.get(name)) || false
 }
 
 /**

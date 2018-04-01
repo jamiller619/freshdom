@@ -68,15 +68,6 @@ DOMRenderer.prototype = {
 
     setNodeAttr(this.node, finalAttrList)
 
-    return this.setProps(props)
-  },
-
-  setProps(props) {
-    props = props || {}
-    Object.defineProperty(this.node, 'props', {
-      writable: true,
-      value: props
-    })
     return this
   },
 
@@ -160,13 +151,13 @@ const renderChildNode = (childNode, container) => {
  * @param {Object} props The props being passed to the element.
  * @return {HTMLElement}
  */
-const createInstance = (func, ...props) => {
+const createInstance = (func, props) => {
   try {
-    return func(...props)
+    return func(props)
     // return new (func(...props))()
   } catch (e) {
     try {
-      return new func(...props)
+      return new func(props)
     } catch (e) {
       throw new Error(`Unable to create element instance: ${e}`)
     }
