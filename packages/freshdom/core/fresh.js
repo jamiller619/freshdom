@@ -1,9 +1,10 @@
 // import HTMLInterfaces from '../types/HTMLInterfaces'
-import HTMLBase, {extend} from './HTMLBase'
+import HTMLBase, {extend} from './element-base'
+import createInstance from './create-instance'
 import {trigger, eventTypes} from './events'
 import registry from './registry'
-import merge from '../helpers/merge'
-import UID from './uid'
+import merge from '../utils/merge'
+import UUID from './uuid'
 
 /**
  * Entry point for creating Custom Element Components
@@ -18,7 +19,7 @@ export default (...args) => {
 
   const isUnnamedComponent = args.length === 1 || typeof args[0] === 'function'
   const isNamedComponent = !isUnnamedComponent
-  const template = isUnnamedComponent && args.length === 2 ? args[1] : undefined
+  // const template = isUnnamedComponent && args.length === 2 ? args[1] : undefined
 
   const component = isNamedComponent ? args[1] : args[0]
   const meta = parseComponentMeta(
@@ -42,22 +43,10 @@ const make = (component, meta) => {
   // const HTMLInterface = getHTMLInterface(inherits)
 
   class Fresh extends HTMLBase((inst, props) => {
-    renderComponent(inst, component, props)
-    if (inst.init) {
-      inst.init(props)
-    }
+    constructElement(inst, component, props)
   }) {}
 
-  initState(Fresh.prototype)
-
-  // Object.defineProperties(initState(Fresh.prototype), {
-  //   init: {
-  //     value(props) {
-  //       console.log(component.init)
-  //       const mergedComponent = renderComponent(Fresh.prototype, component, props)
-  //     }
-  //   }
-  // })
+  console.dir(Fresh)
 
   return registry.define(meta, Fresh)
 }
@@ -66,15 +55,20 @@ const make = (component, meta) => {
  * Merge and instantiates a new component
  *
  * @param {HTMLElement} target: The host instance to merge into
- * @param {object|function} component: The source component
+ * @param {object|function} component: The source component's constructor
  * @param {object} props
  * @return {HTMLElement} The merged result
  */
-const renderComponent = (target, source, props) => {
-  return merge(target, typeof source === 'object'
-    ? source
-    : source.call(target, props)
-  )
+const constructElement = (target, source, props) => {
+  const element = source === 'object' ? source : createInstance(source, props)
+  // return element.prototype instanceof HTMLElement
+  //   ? element 
+  //   : merge(target, element)
+  if (element.prototype instanceof HTMLElement) {
+    return merge(target, element.prototype)
+  } else {
+    return merge(target, element)
+  }
 }
 
 /**
@@ -85,10 +79,10 @@ const renderComponent = (target, source, props) => {
  * @return {object}
  */
 const parseComponentMeta = options => {
-  const uid = UID.create()
+  const uuid = UUID.create()
   const meta = {
-    id: uid,
-    name: uid,
+    id: uuid,
+    name: uuid,
     inherits: undefined
   }
 
@@ -104,6 +98,8 @@ const parseComponentMeta = options => {
 
   return meta
 }
+
+export const Component = make({}, parseComponentMeta())
 
 /**
  * Simple check for previously defined elements to prevent throwing
@@ -143,27 +139,3 @@ const parseComponentCallback = componentCallback => {
 const getHTMLInterface = inherits => {
   return (inherits && HTMLInterfaces[inherits]) || HTMLElement
 }
-
-/**
- * State Initializer
- * Within closure for encapsulation
- *
- * @param {HTMLElement} inst An instance of the HTMLElement
- * @return {HTMLElement} Returns the "modified-in-place" element
- */
-const initState = Component =>
-  (Component => {
-    let oldState = {}
-    return Object.defineProperties(Component, {
-      setState: {
-        value(newState) {
-          oldState = Object.assign({}, oldState, newState)
-        }
-      },
-      state: {
-        get() {
-          return oldState
-        }
-      }
-    })
-  })(Component)

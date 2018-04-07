@@ -7,8 +7,8 @@ export const eventTypes = {
   onUpdate: 'onUpdate'
 }
 
-export const trigger = async (context, type, ...args) => {
-  const method = context[type] || (context.prototype && context.prototype[type]) || undefined
+export const trigger = async (context, type, props, ...args) => {
+  const method = props && props[type] || context[type] || (context.prototype && context.prototype[type]) || undefined
   const customEvent = new CustomEvent(type)
   
   context.dispatchEvent(customEvent)

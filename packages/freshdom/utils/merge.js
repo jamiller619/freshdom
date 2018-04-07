@@ -4,9 +4,7 @@
  * @param {object} dest Object to add descriptors to
  * @param {...object} src Object or Objects to clone descriptors from
  * @returns {object} dest
- * @public
  */
-
 export default (dest, ...src) => {
   if (dest === undefined) {
     throw new TypeError('"dest" is required')
@@ -17,8 +15,11 @@ export default (dest, ...src) => {
   }
 
   return src.reduce((acc, curr) => {
-    return Object.defineProperties(
-      acc, 
-      Object.getOwnPropertyDescriptors(curr))
+    Object.getOwnPropertyNames(curr).forEach(prop => {
+      if (!prop.match(/^(?:constructor|prototype|arguments|caller|name|bind|call|apply|toString|length)$/)) {
+        Object.defineProperty(acc, prop, Object.getOwnPropertyDescriptor(curr, prop))
+      }
+    })
+    return acc
   }, dest)
 }

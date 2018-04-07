@@ -1,7 +1,8 @@
-import isDefined from '../helpers/isDefined'
-import HTMLAttributes from '../types/HTMLAttributes'
-import SVGNodeTypes from '../types/SVGNodes'
-import ElementTypes from '../types/Elements'
+import isDefined from '../utils/is-defined'
+import createInstance from './create-instance'
+import HTMLAttributes from '../types/html-attributes'
+import SVGNodeTypes from '../types/svg-nodes'
+import ElementTypes from '../types/elements'
 
 /**
  * Creates an HTMLElement as the entry point for JSX rendering
@@ -27,17 +28,17 @@ export default (type, props = {}, ...children) => {
  * The Renderer
  *
  * @param {string|Function} type: This will be either a string representing the element's tag name, or a function
- * @param {Object} props: Props object parameters
+ * @param {Object} props: Props object
  * @param {...Function} children: Child nodes to be constructed within the parent. These will typically be recursive calls to this function.
  * @return {HTMLElement} The HTMLElement node
  */
-const DOMRenderer = function(type, props) {
-  const container = parseNodeType(type, props)
-  this.type = container.type
-  this.node = container.node
-}
+class DOMRenderer {
+  constructor(type, props) {
+    const container = parseNodeType(type, props)
+    this.type = container.type
+    this.node = container.node
+  }
 
-DOMRenderer.prototype = {
   /**
    * Normalizes JSX props passed to an element.
    * The resulting element will only have valid props assigned in its attributes collection.
@@ -45,7 +46,7 @@ DOMRenderer.prototype = {
    * @param {Object} props: The props object to render
    * @return {this}
    */
-  mergeProps(props = {}) {
+  mergeProps(props) {
     const nodeAttr = createAttrMap(this.node)
 
     // Concat or merge (instead of Object.assign) string value attributes
@@ -59,6 +60,8 @@ DOMRenderer.prototype = {
       style: mergedStyles
     })
 
+    this.parseEvents(mergedAttrList)
+
     // No need to account for the countless SVG
     // attributes, so stop now and return
     const finalAttrList =
@@ -69,7 +72,24 @@ DOMRenderer.prototype = {
     setNodeAttr(this.node, finalAttrList)
 
     return this
-  },
+  }
+
+  /**
+   * Parses the attributes object for event handlers and
+   * attaches them if found
+   *
+   * @param {Object} attributes
+   */
+  parseEvents(attributes) {
+    const entries = Object.entries(attributes)
+    const events = entries.filter(([key]) => key.startsWith('on'))
+    if (events.length > 0) {
+      events.forEach(([type, handler]) => {
+        const eventName = type.toLowerCase().replace('on', '')
+        this.node.addEventListener(eventName, handler)
+      })
+    }
+  }
 
   /**
    * Validate and render children of the root node
@@ -124,6 +144,13 @@ const container = (type, node) => {
   return {type, node}
 }
 
+/**
+ * Parses, and renders decendent nodes of another element
+ *
+ * @param {HTMLElement} childNode
+ * @param {HTMLElement} container
+ * @return {HTMLElement}
+ */
 const renderChildNode = (childNode, container) => {
   if (childNode instanceof HTMLElement || childNode instanceof SVGElement) {
     container.appendChild(childNode)
@@ -141,26 +168,6 @@ const renderChildNode = (childNode, container) => {
     throw new Error(
       `Expected "object" or "string" but instead got ${typeof childNode}`
     )
-  }
-}
-
-/**
- * Attempts to create an HTMLElement instance from the given function.
- *
- * @param {Function} func The function we're using to create the element.
- * @param {Object} props The props being passed to the element.
- * @return {HTMLElement}
- */
-const createInstance = (func, props) => {
-  try {
-    return func(props)
-    // return new (func(...props))()
-  } catch (e) {
-    try {
-      return new func(props)
-    } catch (e) {
-      throw new Error(`Unable to create element instance: ${e}`)
-    }
   }
 }
 
@@ -184,16 +191,17 @@ const concatStringAttr = (attrNameList, attrMap) => {
 }
 
 /**
- * Filters an array of attributes to contain only valid HTML attributes.
- * This will remove ALL props originally sent to the element, unless the
- * prop key used was a valid attribute, i.e. "name" would be preserved.
+ * Filters an array of attributes so that only valid HTML attributes
+ * remain on the element.
  *
  * @param {string[]} attrMap: object map of key value pairs
  * @return {string[]} Returns an object map containing only valid attributes
  */
 const validateNodeAttr = attrMap => {
   return Object.keys(attrMap)
-    .filter(key => HTMLAttributes.includes(key) || key.includes('data-'))
+    .filter(key => 
+      HTMLAttributes.includes(key) || 
+      key.includes('data-'))
     .reduce((obj, key) => {
       obj[key] = attrMap[key]
       return obj

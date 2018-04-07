@@ -1,8 +1,8 @@
-import attachStore from './attachStore'
+import attach from './attach'
 
-const store = storeObject => {
+const store = store => {
   return target => {
-    attachStore(target.prototype, storeObject)
+    attach(target.prototype, store)
   }
 }
 

@@ -1,8 +1,6 @@
-import createElement from './core/createElement'
-import fresh from './core/fresh'
-
-Object.setPrototypeOf(fresh, Object.create({createElement}))
+import fresh, {Component} from './core/index'
 
 export {
-  fresh as default
+  fresh as default,
+  Component
 }

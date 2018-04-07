@@ -1,9 +1,7 @@
 
-const isDefined = prop => {
+export default prop => {
   return prop !== null && 
     prop !== undefined && 
     prop !== '' && 
     prop !== ' '
 }
-
-export default isDefined

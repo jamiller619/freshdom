@@ -16,20 +16,7 @@ class Router {
       this.handleHashChangeEvent(location.hash)
     })
 
-    document.body.addEventListener('click', e => {
-      const el = e.target.closest('a[data-route="local"]')
-      if (el) {
-        e.preventDefault()
-        el.blur()
-        if (el.hash) {
-          this.handleHashChangeEvent(el.hash)
-        } else {
-          this.pushState({
-            url: el.pathname
-          })
-        }
-      }
-    })
+    document.body.addEventListener('click', this.handleBodyClick.bind(this))
 
     document.addEventListener('DOMContentLoaded', () => {
       this.pushState({
@@ -59,6 +46,21 @@ class Router {
   set scrollRestoration (value) {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = value ? 'auto' : 'manual'
+    }
+  }
+
+  handleBodyClick(e) {
+    const el = e.target.closest('a[data-route="local"]')
+    if (el) {
+      e.preventDefault()
+      el.blur()
+      if (el.hash) {
+        this.handleHashChangeEvent(el.hash)
+      } else {
+        this.pushState({
+          url: el.pathname
+        })
+      }
     }
   }
 

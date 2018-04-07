@@ -1,5 +1,5 @@
-import 'morphdom'
-import fastdom from '../helpers/fastdom'
+import morphdom from 'morphdom'
+import fastdom from '../utils/fastdom'
 
 /**
  * All doms in tha house
@@ -20,7 +20,9 @@ export default async (content, host) => {
     // Skip the morphdom step if the host doesn't
     // have any content (childNodes)
     if (host.firstChild) {
-      morphdom(host, content)
+      morphdom(host, content, {
+        childrenOnly: true
+      })
     } else {
       host.appendChild(content)
     }

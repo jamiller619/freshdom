@@ -1,9 +1,8 @@
-import router from './router/router'
-import Route from './router/Route'
-import RouteLink from './router/RouteLink'
+import router, {RouteLink, RouteController, RouteRenders} from './router/index'
 
 export {
   router as default,
-  Route,
-  RouteLink
+  RouteLink,
+  RouteController,
+  RouteRenders
 }
