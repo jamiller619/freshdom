@@ -1,6 +1,6 @@
 {
   "name": "freshdom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
   "main": "fresh.js",
   "module": "fresh.js",

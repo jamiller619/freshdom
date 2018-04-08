@@ -1,7 +1,9 @@
 import createElement from './create-element'
-import fresh, {Component} from './fresh'
+import Component from './fresh'
 
-Object.setPrototypeOf(fresh, Object.create({ createElement }))
+const fresh = {
+  createElement
+}
 
 export {
   fresh as default,

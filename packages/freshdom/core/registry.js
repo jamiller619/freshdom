@@ -1,34 +1,24 @@
+import uuid from './uuid'
+import config from './config'
 
 class Registry extends Map {
   /**
-   * Records a Custom Element's contructor function with meta
-   * object in the library's global store and the CustomElementRegistry.
+   * Records a Custom Element's contructor function with `id` and `name`
+   * internal properties
    *
-   * @param {string} name: The valid name of the element
-   * @param {Function} targetConstructor: The element's constructor function
-   * @param {string} inherits: The element's tag name used to extend this element
-   * @return {Boolean} Returns the modified constructor function
+   * @param {string} name: The tag name
+   * @param {Function} componentConstructor: The element's constructor function
+   * @return {Function} Returns the modified constructor function
    */
-  define(meta, componentConstructor) {
-    if (componentConstructor.$$__meta) {
-      // I'm at least 90% sure that I'm 100% sure this can't happen...
-      console.warn(`This element has already been defined`)
-      console.dir(componentConstructor.$$__meta)
+  define(name, componentConstructor) {
+    if (isDefined(name, componentConstructor)) {
       return componentConstructor
     }
 
-    Object.defineProperty(componentConstructor, '$$__meta', {
-      enumerable: false,
-      writable: false,
-      configurable: false,
-      value: meta
-    })
+    const {tagName} = getSetInternalProps(name, componentConstructor)
 
-    const {name} = meta
-
-    store.set(name, componentConstructor)
-
-    window.customElements.define(name, componentConstructor)
+    store.set(tagName, componentConstructor)
+    window.customElements.define(tagName, componentConstructor)
 
     return componentConstructor
   }
@@ -43,5 +33,33 @@ const createGlobalRegistry = () => {
 }
 
 const store = window.$$__fresh || createGlobalRegistry()
+
+const isDefined = (name, componentConstructor) => {
+  if (componentConstructor.isDefined && store.get(name)) {
+    return true
+  }
+
+  Object.defineProperty(componentConstructor, 'isDefined', {
+    value: true
+  })
+
+  return false
+}
+
+const getSetInternalProps = (name = '', componentConstructor) => {
+  const id = uuid.create()
+  const tagName = name.includes('-') ? name : `${config.tagPrefix}-${id}`
+
+  Object.defineProperties(componentConstructor, {
+    $$__id: {
+      value: id
+    },
+    $$__tag: {
+      value: tagName
+    }
+  })
+
+  return {id, tagName}
+}
 
 export default store

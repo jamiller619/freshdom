@@ -12,7 +12,7 @@ const now = () => {
 }
 
 const create = () => {
-  return `${ config.tagPrefix }-${ now().toString(36) }`
+  return now().toString(36)
 }
 
 export default {

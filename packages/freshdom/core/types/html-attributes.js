@@ -1,8 +1,4 @@
-/**
- * Generated from the html-attributes npm package: 
- * https://github.com/alexmingoia/html-attributes.
- * Originally an object, converted to an array
- */
+
 export default [
   'abbr',
   'accept',

@@ -10,7 +10,7 @@ const finder = require('./finder')
 export default {
   input: [
     finder.dev('fresh.js'),
-    finder.dev('router.js')
+    // finder.dev('router.js')
   ],
   output: {
     format: 'es',
