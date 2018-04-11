@@ -1,51 +1,103 @@
+import {events} from 'freshdom-utils'
+import compare from 'deep-equal'
+
 import reconcile from './reconciler'
-import events from './events'
 import registry from './registry'
-import createState from './create-state'
 
 const FreshElement = function FreshElement() {}
 
-FreshElement.$$__type = Symbol('fresh.element')
+Object.defineProperties(FreshElement.prototype, {
+  $$__type: {
+    value: Symbol('fresh.element')
+  },
 
-FreshElement.prototype.connectedCallback = async function() {
-  await events.trigger(this, events.type.onBeforeAttach)
-  await this.forceUpdate()
-  this.isAttached = true
-  await events.trigger(this, events.type.onAttach)
-}
+  isAttached: {
+    writable: true,
+    value: false
+  },
 
-FreshElement.prototype.disconnectedCallback = function() {
-  this.isAttached = false
-  events.trigger(this, events.type.onDetach)
-}
+  connectedCallback: {
+    value: async function() {
+      await events.trigger(this, events.type.onBeforeAttach)
+      await this.renderUpdateState()
+      this.isAttached = true
+      await events.trigger(this, events.type.onAttach)
+    }
+  },
+  
+  disconnectedCallback: {
+    value: function() {
+      this.isAttached = false
+      events.trigger(this, events.type.onDetach)
+    }
+  },
+  
+  attributeChangedCallback: {
+    value: function() {
+      this.renderUpdateState()
+    }
+  },
 
-FreshElement.prototype.attributeChangedCallback = function() {
-  this.forceUpdate()
-}
+  $$__state: {
+    configurable: true,
+    value: Object.freeze({})
+  },
 
-FreshElement.prototype.forceUpdate = async function() {
-  if (this.render && typeof this.render === 'function') {
-    await reconcile(this.render(), this)
+  state: {
+    get: function() {
+      return this.$$__state || {}
+    },
+    set: function() {
+      throw new Error('`state` cannot be used as a setter. Use `setState` instead!')
+    }
+  },
+
+  setState: {
+    value: async function(state, renderUpdates = false) {
+      Object.defineProperty(this, '$$__state', {
+        configurable: true,
+        value: Object.freeze(Object.assign({}, this.$$__state, state))
+      })
+
+      if (renderUpdates === true) {
+        await this.renderUpdateState()
+      }
+    }
+  },
+  
+  renderUpdateState: {
+    value: async function() {
+      if (this.render && typeof this.render === 'function') {
+        const rendered = await this.render()
+        await reconcile(rendered, this)
+      }
+    }
   }
+})
+
+const createProps = (inst, props) => {
+  inst.props = Object.freeze(props)
+  return inst
 }
 
-const createProps = props => Object.freeze(props)
+const define = (ctor, props = {}) => {
+  registry.define(ctor.tagName, ctor)
+  return inst => createProps(inst, props)
+}
 
-const elementInterface = HTMLInterface => {
+export const Fresh = HTMLInterface => {
   class Element extends HTMLInterface {
     constructor(props = {}) {
-      registry.define(new.target.tagName, new.target)
-      super()
-      this.props = createProps(props)
+      define(new.target, props)(super())
     }
   }
 
   Object.defineProperties(
-    createState(Element.prototype),
+    Element.prototype,
     Object.getOwnPropertyDescriptors(FreshElement.prototype)
   )
 
   return Element
 }
 
-export default elementInterface(HTMLElement)
+export default Fresh(HTMLElement)

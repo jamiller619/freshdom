@@ -25,7 +25,7 @@ class Router {
     })
   }
 
-  on (...args) {
+  on(...args) {
     if (args[0] && typeof args[0] === 'string') {
       this.saveRoute(args[0], args[1])
     } else if (args[0] && typeof args[0] === 'object') {
@@ -36,14 +36,14 @@ class Router {
     return this
   }
 
-  get scrollRestoration () {
+  get scrollRestoration() {
     if ('scrollRestoration' in window.history) {
       return window.history.scrollRestoration
     }
     throw new Error(`Your browser doesn't support scrollRestoration`)
   }
 
-  set scrollRestoration (value) {
+  set scrollRestoration(value) {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = value ? 'auto' : 'manual'
     }
@@ -64,14 +64,14 @@ class Router {
     }
   }
 
-  handleHashChangeEvent (hash) {
-    this.dispatch({ url: hash })
+  handleHashChangeEvent(hash) {
+    this.dispatch({url: hash})
     if (hash !== location.hash) {
       location.hash = hash
     }
   }
 
-  dispatch (state) {
+  dispatch(state) {
     if (state && state.url && state.url !== '') {
       const route = this.findRoute(state.url)
       if (route && route.action) {
@@ -84,7 +84,7 @@ class Router {
     }
   }
 
-  pushState (state = {}) {
+  pushState(state = {}) {
     if (state.url && state.url !== '') {
       if (window.history.state && window.history.state.url === state.url) {
         window.history.replaceState(state, '', state.url)
@@ -97,7 +97,7 @@ class Router {
     }
   }
 
-  saveRoute (url, action) {
+  saveRoute(url, action) {
     if (!this.findRoute(url)) {
       const route = {
         url: new UrlPattern(url),
@@ -107,7 +107,7 @@ class Router {
     }
   }
 
-  findRoute (url) {
+  findRoute(url) {
     return this.routes.find(route => {
       return url.match(route.url.regex)
     })

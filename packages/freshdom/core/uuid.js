@@ -1,4 +1,4 @@
-import config from './config'
+import config from '../config'
 
 /**
  * Generates a unique id based on the time.

@@ -1,4 +1,5 @@
-import createInstance from './create-instance'
+import {createInstance} from 'freshdom-utils'
+
 import domNamespaces from './types/dom-namespaces'
 import svgNodeNames from './types/svg-node-names'
 import htmlNodeNames from './types/html-node-names'
@@ -58,7 +59,7 @@ NodeTypes.text = {
       return document.createElementNS(props.namespace, node)
     }
 
-    if (node.includes('-') || htmlNodeNames.includes(node)) {
+    if (htmlNodeNames.includes(node)) {
       return document.createElement(node)
     }
 
@@ -90,7 +91,7 @@ const createNode = (nodeType, props) => {
 const setNodeAttributes = (node, props) => {
   if ('namespace' in props) {
     delete props.namespace
-    props.forEach(key => node.setAttributeNS(key, props[key]))
+    Object.keys(props).map(key => node.setAttribute(key, props[key]))
     return node
   }
 
@@ -155,5 +156,5 @@ const filterNodeAttributes = attributes =>
  * @return {Array} List of valid event handlers
  */
 const filterEventAttributes = attributes => {
-  return Object.keys(attributes).filter(attr => attr.startsWith('on'))
+  return Object.keys(attributes).filter(attr => attr.startsWith('on') && attr !== 'on')
 }

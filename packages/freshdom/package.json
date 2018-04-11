@@ -2,8 +2,8 @@
   "name": "freshdom",
   "version": "0.1.1",
   "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
-  "main": "fresh.js",
-  "module": "fresh.js",
+  "main": "index.js",
+  "module": "index.js",
   "author": {
     "name": "Jeff Miller",
     "website": "https://jamiller.me",
@@ -14,7 +14,9 @@
     "type": "git",
     "url": "https://github.com/jamiller619/freshdom.git"
   },
-  "peerDependencies": {
-    "fastdom": "^1.0.8"
+  "dependencies": {
+    "deep-equal": "^1.0.1",
+    "morphdom": "^2.3.3",
+    "freshdom-utils": "file:../../dist/freshdom-utils"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "freshdom-proptypes",
+  "version": "0.0.1",
+  "description": "A JavaScript library for creating user interfaces on the modern web via Web Components.",
+  "main": "index.js",
+  "module": "index.js",
+  "author": {
+    "name": "Jeff Miller",
+    "website": "https://jamiller.me",
+    "email": "hello@jamiller.me"
+  },
+  "license": "MIT"
+}

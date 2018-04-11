@@ -1,0 +1,16 @@
+{
+  "name": "freshdom-utils",
+  "version": "0.0.1",
+  "description": "Common utilities for the freshdom library",
+  "main": "index.js",
+  "module": "index.js",
+  "author": {
+    "name": "Jeff Miller",
+    "website": "https://jamiller.me",
+    "email": "hello@jamiller.me"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "fastdom": "^1.0.8"
+  }
+}

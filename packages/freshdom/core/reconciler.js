@@ -1,5 +1,5 @@
+import {fastdom} from 'freshdom-utils'
 import morphdom from 'morphdom'
-import fastdom from '../utils/fastdom'
 
 /**
  * All doms in tha house

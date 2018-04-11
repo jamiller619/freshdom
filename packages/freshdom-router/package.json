@@ -1,0 +1,19 @@
+{
+  "name": "freshdom-router",
+  "version": "0.0.1",
+  "description": "Routing for the freshdom library",
+  "main": "index.js",
+  "module": "index.js",
+  "author": {
+    "name": "Jeff Miller",
+    "website": "https://jamiller.me",
+    "email": "hello@jamiller.me"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "freshdom": "file:../../dist/freshdom",
+    "freshdom-proptypes": "file:../../dist/freshdom-proptypes",
+    "freshdom-utils": "file:../../dist/freshdom-utils",
+    "url-pattern": "^1.0.3"
+  }
+}

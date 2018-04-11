@@ -1,5 +1,5 @@
+import config from '../config'
 import uuid from './uuid'
-import config from './config'
 
 class Registry extends Map {
   /**
@@ -11,7 +11,7 @@ class Registry extends Map {
    * @return {Function} Returns the modified constructor function
    */
   define(name, componentConstructor) {
-    if (isDefined(name, componentConstructor)) {
+    if (isDefined(componentConstructor)) {
       return componentConstructor
     }
 
@@ -34,14 +34,11 @@ const createGlobalRegistry = () => {
 
 const store = window.$$__fresh || createGlobalRegistry()
 
-const isDefined = (name, componentConstructor) => {
-  if (componentConstructor.isDefined && store.get(name)) {
+const isDefined = componentConstructor => {
+  const tagName = componentConstructor.$$__tag
+  if (tagName != null && store.get(tagName) != null) {
     return true
   }
-
-  Object.defineProperty(componentConstructor, 'isDefined', {
-    value: true
-  })
 
   return false
 }
