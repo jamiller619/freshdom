@@ -1,7 +1,0 @@
-{
-  "name": "freshdom-compiler",
-  "version": "0.0.1",
-  "description": "freshdom compiler",
-  "main": "index.js",
-  "license": "MIT"
-}
