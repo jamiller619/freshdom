@@ -2,7 +2,8 @@ import Component from './core/fresh'
 import createElement from './core/create-element'
 
 const fresh = {
-  createElement
+  createElement,
+  Component
 }
 
 export {
