@@ -70,6 +70,7 @@ Object.defineProperties(FreshElement.prototype, {
       if (this.render && typeof this.render === 'function') {
         const rendered = await this.render()
         await reconcile(rendered, this)
+        await events.trigger(this, events.type.onRender)
       }
     }
   }

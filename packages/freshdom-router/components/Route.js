@@ -1,34 +1,55 @@
-import {Component} from 'freshdom'
-import {events, fastdom, createInstance} from 'freshdom-utils'
+import fresh, {Component} from 'freshdom'
+import {events, fastdom} from 'freshdom-utils'
 import PropTypes from 'freshdom-proptypes'
 
 import router from '../router'
 import eventTypes from '../event-types'
+import lazify from './lazify'
 
 export default class Route extends Component {
+  /**
+   * Public API
+   */
   static propTypes = {
     on: PropTypes.string,
-    renders: PropTypes.func
+    async: PropTypes.bool,
+    renders: PropTypes.PropTypes.func
   };
 
   constructor(props) {
-    super(props)
+    super(props).hide()
 
-    router.on(this.props.on, this.renderRouteUpdate.bind(this))
-    this.hide()
+    router.on(props.on, this.renderRouteUpdate.bind(this))
   }
 
   onAttach() {
     this.setState({
-      parentRef: this.parentNode
+      parentRef: this.parentNode 
     })
 
     this.remove()
   }
 
+  async renderComponent(props) {
+    if (!this.state.componentRef || props !== this.state.componentPropsRef) {
+      const component = this.props.async === true
+        ? lazify(this.props.renders)
+        : this.props.renders
+
+      const componentRef = fresh.createElement(component, props)
+
+      this.setState({ 
+        componentRef, 
+        componentPropsRef: props
+      })
+    }
+
+    return this.state.componentRef
+  }
+
   async renderRouteUpdate(routeProps) {
     const container = this.state.parentRef
-    const component = await createInstance(this.props.renders, routeProps)
+    const component = await this.renderComponent(routeProps)
 
     const elementLeaving = container.firstElementChild
     await events.trigger(component, eventTypes.onRouteBeforeAttach, elementLeaving)
