@@ -1,6 +1,6 @@
 const type = {
   render: 'render',
-  onRender: 'onRender',
+  onRenderComplete: 'onRenderComplete',
   onBeforeAttach: 'onBeforeAttach',
   onAttach: 'onAttach',
   onDetach: 'onDetach'
@@ -8,7 +8,9 @@ const type = {
 
 const trigger = async (context, type, ...args) => {
   const method = context[type] || (context.prototype && context.prototype[type]) || undefined
-  const customEvent = new CustomEvent(type)
+  const customEvent = new CustomEvent(type.toLowerCase(), {
+    bubbles: true
+  })
   
   context.dispatchEvent(customEvent)
 

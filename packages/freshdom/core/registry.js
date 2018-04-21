@@ -11,19 +11,24 @@ class Registry extends Map {
    * @return {Function} Returns the modified constructor function
    */
   define(name, componentConstructor) {
-    if (isDefined(componentConstructor)) {
-      return componentConstructor
+    if (isDefined(name)) {
+      return true
     }
 
-    const {tagName} = getSetInternalProps(name, componentConstructor)
+    const {tag} = getSetInternalProps(name, componentConstructor)
 
-    store.set(tagName, componentConstructor)
-    window.customElements.define(tagName, componentConstructor)
+    store.set(tag, componentConstructor)
+    window.customElements.define(tag, componentConstructor)
 
-    return componentConstructor
+    return false
   }
 }
 
+/**
+ * Creates our registry as a Map object in the global scope
+ *
+ * @return {Map}
+ */
 const createGlobalRegistry = () => {
   const registry = new Registry()
   Object.defineProperty(window, '$$__fresh', {
@@ -34,29 +39,66 @@ const createGlobalRegistry = () => {
 
 const store = window.$$__fresh || createGlobalRegistry()
 
-const isDefined = componentConstructor => {
-  const tagName = componentConstructor.$$__tag
-  if (tagName != null && store.get(tagName) != null) {
+/**
+ * Checks for an element definition that exists either in our
+ * library's global store or the CustomElementRegistry
+ *
+ * @param {string} tag: The element's tag name to check
+ * @return {bool}
+ */
+const isDefined = tag => {
+  if (
+    tag != null &&
+    (store.get(tag) != null || window.customElements.get(tag) != null)
+  ) {
     return true
   }
 
   return false
 }
 
+/**
+ * Creates a valid Custom Element tag name
+ *
+ * @param {string} prefix
+ * @param {string} suffix
+ * @return {string}
+ */
+const createValidTagName = (prefix, suffix) => {
+  prefix = prefix.toLowerCase()
+  const validPrefix = prefix.charAt(0).match(/[^a-z]+/g)
+    ? prefix.slice(1)
+    : prefix
+  return `${validPrefix}-${suffix}`
+}
+
+/**
+ * Gets an element's `id` and `tag` properties.
+ * If they don't exist, creates and assigns them to the
+ * element's constructor as static properties
+ *
+ * @param {string} name
+ * @param {function} componentConstructor
+ * @return {object} Returns an object with `tag` and `id` properties
+ */
 const getSetInternalProps = (name = '', componentConstructor) => {
-  const id = uuid.create()
-  const tagName = name.includes('-') ? name : `${config.tagPrefix}-${id}`
-
-  Object.defineProperties(componentConstructor, {
-    $$__id: {
-      value: id
-    },
-    $$__tag: {
-      value: tagName
+  const props = {
+    id: {
+      value: uuid.create()
     }
-  })
+  }
 
-  return {id, tagName}
+  if (componentConstructor.tag == undefined) {
+    props.tag = {
+      value: name.includes('-')
+        ? name
+        : createValidTagName(componentConstructor.name, id)
+    }
+  }
+
+  Object.defineProperties(componentConstructor, props)
+
+  return ({id, tag} = componentConstructor)
 }
 
 export default store

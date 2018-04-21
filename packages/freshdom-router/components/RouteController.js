@@ -1,17 +1,20 @@
-import {Component} from 'freshdom'
+import fresh, {Component} from 'freshdom'
 import PropTypes from 'freshdom-proptypes'
 
 import Route from './Route'
 
 export default class RouteController extends Component {
-  static tagName = 'fd-route-controller';
-
+  /**
+   * Public API
+   */
   static propTypes = {
     controller: PropTypes.oneOf([
       PropTypes.func,
       PropTypes.object
     ])
   };
+
+  static tag = 'route-controller';
 
   onAttach() {
     const controller = this.parseController()
@@ -30,5 +33,9 @@ export default class RouteController extends Component {
     while(this.hasChildNodes()) {
       this.removeChild(this.lastChild)
     }
+  }
+
+  render() {
+    
   }
 }

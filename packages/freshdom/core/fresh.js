@@ -1,80 +1,191 @@
 import {events} from 'freshdom-utils'
 import compare from 'deep-equal'
 
-import reconcile from './reconciler'
+import redom from './redom'
 import registry from './registry'
+import * as freshType from './types/fresh'
 
 const FreshElement = function FreshElement() {}
 
 Object.defineProperties(FreshElement.prototype, {
-  $$__type: {
-    value: Symbol('fresh.element')
-  },
-
-  isAttached: {
-    writable: true,
-    value: false
-  },
-
+  /**
+   * Lifecycle callbacks as defined by the Custom Element spec
+   */
   connectedCallback: {
     value: async function() {
       await events.trigger(this, events.type.onBeforeAttach)
-      await this.renderUpdateState()
+      await this.forceRefresh()
       this.isAttached = true
       await events.trigger(this, events.type.onAttach)
     }
   },
-  
+
   disconnectedCallback: {
     value: function() {
       this.isAttached = false
       events.trigger(this, events.type.onDetach)
     }
   },
-  
+
   attributeChangedCallback: {
-    value: function() {
-      this.renderUpdateState()
+    value: async function() {
+      await this.forceRefresh()
     }
+  },
+
+  /**
+   * Public properties
+   */
+  isAttached: {
+    writable: true,
+    value: false
+  },
+
+  state: {
+    get: function() {
+      return this.$$__state
+    },
+    set: function() {
+      throw new Error(
+        'Component state is immutable and cannot be used as a setter. Use "setState" instead.'
+      )
+    }
+  },
+
+  /**
+   * Public methods
+   */
+  setState: {
+    value: async function(...args) {
+      const {state, shouldRender, callback} = parseSetStateArguments(...args)
+
+      const prevState = clone(this.state)
+      const newState = clone(this.state, state)
+
+      Object.defineProperty(Object.getPrototypeOf(this), '$$__state', {
+        configurable: true,
+        value: newState
+      })
+
+      if (shouldRender === true) {
+        await this.forceRefresh()
+      }
+
+      if (callback) {
+        return callback.call(this, prevState, this.props)
+      }
+    }
+  },
+
+  forceRefresh: {
+    value: async function(callback) {
+      if (this.render && typeof this.render === 'function') {
+        const children = await this.render()
+        await redom(this, children)
+        await events.trigger(this, events.type.onRenderComplete)
+      }
+    }
+  },
+
+  /**
+   * Private properties and methods
+   */
+  $$__type: {
+    value: freshType.element
   },
 
   $$__state: {
     configurable: true,
     value: Object.freeze({})
-  },
-
-  state: {
-    get: function() {
-      return this.$$__state || {}
-    },
-    set: function() {
-      throw new Error('`state` cannot be used as a setter. Use `setState` instead!')
-    }
-  },
-
-  setState: {
-    value: async function(state, renderUpdates = false) {
-      Object.defineProperty(this, '$$__state', {
-        configurable: true,
-        value: Object.freeze(Object.assign({}, this.$$__state, state))
-      })
-
-      if (renderUpdates === true) {
-        await this.renderUpdateState()
-      }
-    }
-  },
-  
-  renderUpdateState: {
-    value: async function() {
-      if (this.render && typeof this.render === 'function') {
-        const rendered = await this.render()
-        await reconcile(rendered, this)
-        await events.trigger(this, events.type.onRender)
-      }
-    }
   }
 })
+
+/**
+ * Mostly truly private methods
+ */
+const parseSetStateArguments = (...args) => {
+  if (args.length > 2) {
+    throw new Error(
+      `Invalid number of arguments passed to setState. Expected a maximum of 3 but received: ${args.length}.`
+    )
+  }
+
+  const result = {
+    state: {},
+    shouldRender: false,
+    callback: undefined
+  }
+
+  // The first item is always the new state
+  result.state = args[0]
+
+  // The second item can either be:
+  //  a callback function or
+  //  a boolean to re-render the component
+  const additionalArgs = args.slice(1)
+  for (let i of additionalArgs) {
+    Object.assign(result.state, parseSetStateAdditionalArgument(i))
+  }
+
+  return result
+}
+
+const parseSetStateAdditionalArgument = arg => {
+  if (typeof arg === 'function') {
+    return {callback: arg}
+  }
+
+  if (typeof arg === 'boolean') {
+    return {shouldRender: arg}
+  }
+
+  throw new Error(
+    `Invalid argument passed to setState. Expected a callback function or boolean to indicate a re-render. Instead received: "${typeof arg}"`
+  )
+}
+
+const awaitCompleteRender = async context => {
+  const freshChildren = getFreshChildren(context)
+  console.dir(context.children)
+
+  if (freshChildren.length === 0) {
+    return Promise.resolve()
+  }
+
+  const test = freshChildren.map(async child =>
+    await addRenderingCompleteListener(child)
+  )
+
+  return Promise.all(test)
+
+  // return new Promise((resolve, reject) => {
+  //   let counter = 0
+  //   const onRenderCompleteCallback = () => {
+  //     counter += 1
+  //     if (counter === counterCompleteCount) {
+  //       resolve()
+  //     }
+  //   }
+
+  //   freshElements.forEach(child => {
+  //     addRenderingCompleteListener(child, onRenderCompleteCallback)
+  //   })
+  // })
+}
+
+const addRenderingCompleteListener = async freshElement => {
+  return new Promise(resolve => {
+    const handleOnAttachEvent = () => {
+      freshElement.removeEventListener('onattach')
+      resolve()
+    }
+
+    freshElement.addEventListener('onattach', handleOnAttachEvent)
+  })
+}
+
+const clone = (obj, ...additionalObjects) =>
+  Object.assign({}, obj, ...additionalObjects)
 
 const createProps = (inst, props) => {
   inst.props = Object.freeze(props)
@@ -82,11 +193,20 @@ const createProps = (inst, props) => {
 }
 
 const define = (ctor, props = {}) => {
-  registry.define(ctor.tagName, ctor)
+  registry.define(ctor.tag, ctor)
   return inst => createProps(inst, props)
 }
 
-export const Fresh = HTMLInterface => {
+/**
+ * The Factory
+ *
+ * Returns a constructor with all prototypes in place,
+ * ready to be used in a prototype chain or extend.
+ *
+ * Can extend any HTML Interface ala . Defaults to "HTMLElement"
+ *
+ */
+export const Fresh = (HTMLInterface = HTMLElement) => {
   class Element extends HTMLInterface {
     constructor(props = {}) {
       define(new.target, props)(super())
@@ -101,4 +221,4 @@ export const Fresh = HTMLInterface => {
   return Element
 }
 
-export default Fresh(HTMLElement)
+export default Fresh()

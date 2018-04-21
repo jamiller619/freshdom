@@ -1,9 +1,8 @@
-import {createInstance} from 'freshdom-utils'
+import parseNodeType from './parse-node-type'
 
-import domNamespaces from './types/dom-namespaces'
-import svgNodeNames from './types/svg-node-names'
-import htmlNodeNames from './types/html-node-names'
-import htmlAttributes from './types/html-attributes'
+import SVGNodes from './types/svg-nodes'
+import HTMLAttributes from './types/html-attributes'
+import SVGAttributes from './types/svg-attributes'
 
 /**
  * Creates a DOM node
@@ -13,72 +12,32 @@ import htmlAttributes from './types/html-attributes'
  * @param {...createElement} children
  * @return {HTMLElement}
  */
+// export default (type, props, ...children) => {
+
+// }
+
 export default (type, props, ...children) => {
   props = props || {}
 
-  if (svgNodeNames.includes(type)) {
-    props.namespace = domNamespaces.svg
+  props.children = Object.freeze(...children)
+
+  return appendChildren(
+    setNodeAttributes(parseNodeType(type, props), props),
+    ...children
+  )
+}
+
+const appendChildren = (host, ...children) => {
+  if (children.length === 0) {
+    return host
   }
 
-  const element = setNodeAttributes(createNode(type, props), props)
+  // const freshChildNodes = children.filter(node => node.$$__type && node.$$__type === freshType.element)
+  const childNodes = children.map(childNode => parseNodeType(childNode))
 
-  children.forEach(childNode => {
-    element.appendChild(createNode(childNode))
-  })
+  host.append(...childNodes)
 
-  return element
-}
-
-const NodeTypes = {}
-
-NodeTypes.element = {
-  check: node => node instanceof HTMLElement || node instanceof SVGElement,
-  parse: node => node
-}
-
-NodeTypes.func = {
-  check: node => typeof node === 'function',
-  parse: (node, props) => createInstance(node, props)
-}
-
-NodeTypes.array = {
-  check: node => Array.isArray(node),
-  parse: nodes => {
-    const container = document.createDocumentFragment()
-    return nodes.reduce((acc, curr) => {
-      acc.appendChild(createNode(curr))
-      return acc
-    }, container)
-  }
-}
-
-NodeTypes.text = {
-  check: node => typeof node === 'string' || typeof node === 'number',
-  parse: (node, props = {}) => {
-    if (props.namespace) {
-      return document.createElementNS(props.namespace, node)
-    }
-
-    if (htmlNodeNames.includes(node)) {
-      return document.createElement(node)
-    }
-
-    return document.createTextNode(node)  
-  }
-}
-
-/**
- * Creates an HTML node
- *
- * @param {string|Function} type: Either a string representing an element's tag name, or a function
- * @param {Object} props
- * @return {HTMLElement}
- */
-const createNode = (nodeType, props) => {
-  const type = Object.values(NodeTypes).find(({check}) => check(nodeType) === true)
-  if (type) {
-    return type.parse(nodeType, props)
-  }
+  return host
 }
 
 /**
@@ -89,12 +48,6 @@ const createNode = (nodeType, props) => {
  * @return {HTMLElement}
  */
 const setNodeAttributes = (node, props) => {
-  if ('namespace' in props) {
-    delete props.namespace
-    Object.keys(props).map(key => node.setAttribute(key, props[key]))
-    return node
-  }
-
   filterEventAttributes(props).forEach(event => {
     node.addEventListener(event, props[event])
   })
@@ -113,23 +66,25 @@ const setNodeAttributes = (node, props) => {
  * @param {Object} attribute
  */
 const setNodeAttribute = (node, key, value) => {
-  switch (key) {
-    case 'className':
-      node.setAttribute('class', value)
-      return
-    case 'style':
-      if (typeof value === 'object') {
-        Object.assign(node.style, value)
-        return
-      }
+  let attributeKey = key
+
+  if (key === 'className') {
+    attributeKey = 'class'
+  }
+
+  if (typeof value === 'object') {
+    Object.assign(node[attributeKey], value)
   }
 
   if (value === true) {
-    node.setAttribute(key, '')
+    node.setAttribute(attributeKey, '')
   } else if (value !== false && value !== null) {
-    node.setAttribute(key, value)
+    node.setAttribute(attributeKey, value)
   }
 }
+
+// Stayin' DRY
+const objectFilter = (obj, filter) => Object.keys(obj).filter(filter)
 
 /**
  * Determines the validity of a single attribute
@@ -137,8 +92,10 @@ const setNodeAttribute = (node, key, value) => {
  * @param {string} attribute
  * @return {bool}
  */
-const isValidAttribute = attribute => 
-  htmlAttributes.includes(attribute) || attribute.includes('data-')
+const isValidAttribute = attribute =>
+  HTMLAttributes.includes(attribute) ||
+  attribute.includes('data-') ||
+  SVGAttributes.includes(attribute)
 
 /**
  * Filters a collection of attributes for validity
@@ -147,7 +104,7 @@ const isValidAttribute = attribute =>
  * @return {Array} List of valid attributes
  */
 const filterNodeAttributes = attributes =>
-  Object.keys(attributes).filter(key => isValidAttribute(key))
+  objectFilter(attributes, key => isValidAttribute(key))
 
 /**
  * Filters a collection of attributes for event handlers
@@ -155,6 +112,5 @@ const filterNodeAttributes = attributes =>
  * @param {string} attributes
  * @return {Array} List of valid event handlers
  */
-const filterEventAttributes = attributes => {
-  return Object.keys(attributes).filter(attr => attr.startsWith('on') && attr !== 'on')
-}
+const filterEventAttributes = attributes =>
+  objectFilter(attributes, attr => attr.startsWith('on') && attr !== 'on')

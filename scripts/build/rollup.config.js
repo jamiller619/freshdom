@@ -47,7 +47,7 @@ const generateConfig = (input, output, options = {}) => {
       output: {
         file: output,
         format: 'es',
-        sourcemap: true,
+        // sourcemap: true,
         interop: false
       },
       plugins: [
