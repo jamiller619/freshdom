@@ -1,5 +1,6 @@
 import Component from './core/fresh'
 import createElement from './core/create-element'
+import {tag} from './decorators'
 
 const fresh = {
   createElement,
@@ -8,5 +9,6 @@ const fresh = {
 
 export {
   fresh as default,
-  Component
+  Component,
+  tag
 }
