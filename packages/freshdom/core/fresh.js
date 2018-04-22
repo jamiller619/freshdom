@@ -1,5 +1,4 @@
-import {events} from 'freshdom-utils'
-import compare from 'deep-equal'
+import { events } from 'freshdom-utils'
 
 import redom from './redom'
 import registry from './registry'
@@ -57,7 +56,7 @@ Object.defineProperties(FreshElement.prototype, {
    */
   setState: {
     value: async function(...args) {
-      const {state, shouldRender, callback} = parseSetStateArguments(...args)
+      const { state, shouldRender, callback } = parseSetStateArguments(...args)
 
       const prevState = clone(this.state)
       const newState = clone(this.state, state)
@@ -78,7 +77,7 @@ Object.defineProperties(FreshElement.prototype, {
   },
 
   forceRefresh: {
-    value: async function(callback) {
+    value: async function() {
       if (this.render && typeof this.render === 'function') {
         const children = await this.render()
         await redom(this, children)
@@ -106,7 +105,9 @@ Object.defineProperties(FreshElement.prototype, {
 const parseSetStateArguments = (...args) => {
   if (args.length > 2) {
     throw new Error(
-      `Invalid number of arguments passed to setState. Expected a maximum of 3 but received: ${args.length}.`
+      `Invalid number of arguments passed to setState. Expected a maximum of 3 but received: ${
+        args.length
+      }.`
     )
   }
 
@@ -132,56 +133,16 @@ const parseSetStateArguments = (...args) => {
 
 const parseSetStateAdditionalArgument = arg => {
   if (typeof arg === 'function') {
-    return {callback: arg}
+    return { callback: arg }
   }
 
   if (typeof arg === 'boolean') {
-    return {shouldRender: arg}
+    return { shouldRender: arg }
   }
 
   throw new Error(
     `Invalid argument passed to setState. Expected a callback function or boolean to indicate a re-render. Instead received: "${typeof arg}"`
   )
-}
-
-const awaitCompleteRender = async context => {
-  const freshChildren = getFreshChildren(context)
-  console.dir(context.children)
-
-  if (freshChildren.length === 0) {
-    return Promise.resolve()
-  }
-
-  const test = freshChildren.map(async child =>
-    await addRenderingCompleteListener(child)
-  )
-
-  return Promise.all(test)
-
-  // return new Promise((resolve, reject) => {
-  //   let counter = 0
-  //   const onRenderCompleteCallback = () => {
-  //     counter += 1
-  //     if (counter === counterCompleteCount) {
-  //       resolve()
-  //     }
-  //   }
-
-  //   freshElements.forEach(child => {
-  //     addRenderingCompleteListener(child, onRenderCompleteCallback)
-  //   })
-  // })
-}
-
-const addRenderingCompleteListener = async freshElement => {
-  return new Promise(resolve => {
-    const handleOnAttachEvent = () => {
-      freshElement.removeEventListener('onattach')
-      resolve()
-    }
-
-    freshElement.addEventListener('onattach', handleOnAttachEvent)
-  })
 }
 
 const clone = (obj, ...additionalObjects) =>
@@ -204,9 +165,8 @@ const define = (ctor, props = {}) => {
  * ready to be used in a prototype chain or extend.
  *
  * Can extend any HTML Interface ala . Defaults to "HTMLElement"
- *
  */
-export const Fresh = (HTMLInterface = HTMLElement) => {
+export const Fresh = (HTMLInterface = window.HTMLElement) => {
   class Element extends HTMLInterface {
     constructor(props = {}) {
       define(new.target, props)(super())

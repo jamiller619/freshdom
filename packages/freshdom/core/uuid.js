@@ -1,5 +1,3 @@
-import config from '../config'
-
 /**
  * Generates a unique id based on the time.
  * Adapted from npm package `uniqid`
@@ -8,7 +6,7 @@ import config from '../config'
 const now = () => {
   const time = Date.now()
   const last = now.last || time
-  return now.last = time > last ? time : last + 1
+  return (now.last = time > last ? time : last + 1)
 }
 
 const create = () => {

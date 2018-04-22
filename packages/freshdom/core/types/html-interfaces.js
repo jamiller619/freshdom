@@ -1,4 +1,4 @@
 export default {
-  button: HTMLButtonElement,
-  header: HTMLElement
+  button: window.HTMLButtonElement,
+  header: window.HTMLElement
 }

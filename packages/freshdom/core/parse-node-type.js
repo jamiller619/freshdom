@@ -1,9 +1,9 @@
-import {createInstance} from 'freshdom-utils'
+import { createInstance } from 'freshdom-utils'
 
 import XMLNamespace from './types/xml-namespaces'
 import SVGNodes from './types/svg-nodes'
 import HTMLNodes from './types/html-nodes'
-import {isElement} from './types/is-html'
+import { isElement } from './types/is-html'
 
 const returnSelf = res => res
 
@@ -55,7 +55,7 @@ const parseType = type => {
   return result || returnSelf
 }
 
-export default (parse = (type, props = {}) => {
+const parse = (type, props = {}) => {
   const node = parseType(type)(props)
 
   if (!isElement(node)) {
@@ -63,4 +63,6 @@ export default (parse = (type, props = {}) => {
   }
 
   return node
-})
+}
+
+export default parse

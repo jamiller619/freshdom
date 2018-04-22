@@ -1,7 +1,7 @@
-import {fastdom} from 'freshdom-utils'
+import { fastdom } from 'freshdom-utils'
 import morphdom from 'morphdom'
-import {isTemplate} from './types/is-html'
-import {query} from './types/fresh'
+import { isTemplate } from './types/is-html'
+import { query } from './types/fresh'
 
 /**
  * All DOMs in tha house!
@@ -12,11 +12,11 @@ import {query} from './types/fresh'
  * @param {HTMLElement} content
  * @returns {HTMLElement}
  */
-export default async (host, content) => {
+export default async(host, content) => {
   content = isTemplate(content) ? rewrap(content) : content
 
-  return await fastdom.mutate(
-    async () => await renderComplete(adapt(host, content))
+  return fastdom.mutate(
+    async() => renderComplete(adapt(host, content))
   )
 }
 
@@ -33,7 +33,7 @@ const adapt = (host, content) => {
   // Is it better to use Node.hasChildNodes method here? Pretty sure probably not...
   if (host.firstChild) {
     const childrenOnly = true
-    return morphdom(host, content, {childrenOnly})
+    return morphdom(host, content, { childrenOnly })
   }
 
   host.appendChild(content)
@@ -66,7 +66,7 @@ const renderComplete = async context => {
   }
 
   return Promise.all(
-    freshChildren.map(async child => await addRenderingCompleteListener(child))
+    freshChildren.map(async child => addRenderingCompleteListener(child))
   )
 }
 

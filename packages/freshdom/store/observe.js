@@ -1,4 +1,3 @@
-
 export const createElementObservable = (target, key) => {
   const proto = Object.getPrototypeOf(target)
   if (!proto.constructor.observedAttributes) {
@@ -31,10 +30,10 @@ export const createObjectObservable = (target, key) => {
     enumerable: true,
     configurable: true,
     get() {
-      return this[`$$__${ key }`]
+      return this[`$$__${key}`]
     },
     set(value) {
-      this[`$$__${ key }`] = value
+      this[`$$__${key}`] = value
       if (this.$$__update) {
         this.$$__update(key, value)
       }
@@ -44,7 +43,7 @@ export const createObjectObservable = (target, key) => {
 }
 
 const observe = (target, key) => {
-  if (target instanceof HTMLElement) {
+  if (target instanceof window.HTMLElement) {
     return createElementObservable(target, key)
   } else {
     return createObjectObservable(target, key)

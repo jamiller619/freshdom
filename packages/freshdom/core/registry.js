@@ -1,4 +1,3 @@
-import config from '../config'
 import uuid from './uuid'
 
 class Registry extends Map {
@@ -15,7 +14,7 @@ class Registry extends Map {
       return true
     }
 
-    const {tag} = getSetInternalProps(name, componentConstructor)
+    const { tag } = getSetInternalProps(name, componentConstructor)
 
     store.set(tag, componentConstructor)
     window.customElements.define(tag, componentConstructor)
@@ -82,13 +81,14 @@ const createValidTagName = (prefix, suffix) => {
  * @return {object} Returns an object with `tag` and `id` properties
  */
 const getSetInternalProps = (name = '', componentConstructor) => {
+  const id = uuid.create()
   const props = {
     id: {
-      value: uuid.create()
+      value: id
     }
   }
 
-  if (componentConstructor.tag == undefined) {
+  if (componentConstructor.tag === undefined) {
     props.tag = {
       value: name.includes('-')
         ? name
@@ -98,7 +98,9 @@ const getSetInternalProps = (name = '', componentConstructor) => {
 
   Object.defineProperties(componentConstructor, props)
 
-  return ({id, tag} = componentConstructor)
+  const tag = props.tag && props.tag.value || name
+
+  return {id, tag}
 }
 
 export default store

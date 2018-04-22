@@ -1,6 +1,5 @@
 import parseNodeType from './parse-node-type'
 
-import SVGNodes from './types/svg-nodes'
 import HTMLAttributes from './types/html-attributes'
 import SVGAttributes from './types/svg-attributes'
 
