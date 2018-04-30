@@ -7,6 +7,7 @@ const fresh = {
   Component
 }
 
+// prettier-ignore
 export {
   fresh as default,
   Component,
