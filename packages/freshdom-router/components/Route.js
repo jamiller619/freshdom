@@ -1,4 +1,4 @@
-import fresh, {Component} from 'freshdom'
+import {Component} from 'freshdom'
 import {events, fastdom, FreshElement} from 'freshdom-utils'
 import PropTypes from 'freshdom-proptypes'
 

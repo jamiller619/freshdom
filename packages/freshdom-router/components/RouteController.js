@@ -1,3 +1,10 @@
+/**
+ * This file isn't yet being exported from this
+ * package, so no need to run eslint
+ */
+
+/* eslint-disable */
+
 import fresh, {Component} from 'freshdom'
 import PropTypes from 'freshdom-proptypes'
 

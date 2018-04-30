@@ -65,7 +65,7 @@ class Router {
   }
 
   handleHashChangeEvent(hash) {
-    this.dispatch({url: hash})
+    this.dispatch({ url: hash })
     if (hash !== location.hash) {
       location.hash = hash
     }

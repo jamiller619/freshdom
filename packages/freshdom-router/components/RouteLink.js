@@ -1,4 +1,4 @@
-export default props => {
+export default () => {
   const a = document.createElement('a')
   a.dataset.route = 'local'
   a.tabindex = '-1'

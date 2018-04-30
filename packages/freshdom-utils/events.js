@@ -7,11 +7,12 @@ const type = {
 }
 
 const trigger = async (context, type, ...args) => {
-  const method = context[type] || (context.prototype && context.prototype[type]) || undefined
+  const method =
+    context[type] || (context.prototype && context.prototype[type]) || undefined
   const customEvent = new CustomEvent(type.toLowerCase(), {
     bubbles: true
   })
-  
+
   context.dispatchEvent(customEvent)
 
   if (typeof method === 'function') {

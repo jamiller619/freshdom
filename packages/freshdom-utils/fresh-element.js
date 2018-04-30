@@ -1,4 +1,3 @@
-
 const freshElementType = Symbol('fresh.element')
 
 const assignType = el => {
@@ -18,9 +17,10 @@ export const isFreshElement = el => el.$$__type === freshElementType
  * @return {Object}
  */
 export const FreshElement = (func, props) => {
-  const el = func.prototype && 'constructor' in func.prototype
-    ? new func(props)
-    : func(props)
+  const el =
+    func.prototype && 'constructor' in func.prototype
+      ? new func(props)
+      : func(props)
 
   return assignType(el)
 }
