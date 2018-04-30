@@ -1,7 +1,6 @@
-import { fastdom } from 'freshdom-utils'
+import { fastdom, isFreshElement } from 'freshdom-utils'
 import morphdom from 'morphdom'
 import { isTemplate } from './types/is-html'
-import { query } from './types/fresh'
 
 /**
  * All DOMs in tha house!
@@ -13,43 +12,52 @@ import { query } from './types/fresh'
  * @returns {HTMLElement}
  */
 export default async(host, content) => {
-  content = isTemplate(content) ? rewrap(content) : content
+  content = isTemplate(content) ? fragmentWrap(...content.childNodes) : content
 
   return fastdom.mutate(
-    async() => renderComplete(adapt(host, content))
+    async() => renderComplete(merge(host, content))
   )
 }
 
 /**
- * The core adaptation implementation.
- * Say that shit five times fast!
+ * The core merge node implementation.
  *
  * @param {HTMLElement} host
  * @param {HTMLElement} content
  * @returns {HTMLElement}
  */
-const adapt = (host, content) => {
+const merge = (host, content) => {
   // Only morph the DOM if the host has content
-  // Is it better to use Node.hasChildNodes method here? Pretty sure probably not...
   if (host.firstChild) {
-    const childrenOnly = true
-    return morphdom(host, content, { childrenOnly })
+    return morphdom(host, content)
   }
+  
+  host.append(content)
 
-  host.appendChild(content)
   return host
 }
 
 /**
- * Replaces a node collection's parent with a fragment.
+ * Wraps a node with a fragment.
  *
  * @param {HTMLElement} content
  * @returns {HTMLDocumentFragment}
  */
-const rewrap = content => {
+const fragmentWrap = (...content) => {
   const wrapper = document.createDocumentFragment()
-  wrapper.append(...content.childNodes)
+  wrapper.append(...content)
   return wrapper
+}
+
+/**
+ * Filters an element's children looking for Custom Elements
+ * of type Fresh
+ *
+ * @param {HTMLElement} context
+ * @returns {HTMLElement[]}
+ */
+const findFreshElements = context => {
+  return Array.from(context.children).filter(el => isFreshElement(el))
 }
 
 /**
@@ -59,7 +67,7 @@ const rewrap = content => {
  * @returns {Promise}
  */
 const renderComplete = async context => {
-  const freshChildren = query(context)
+  const freshChildren = findFreshElements(context)
 
   if (freshChildren.length === 0) {
     return Promise.resolve()

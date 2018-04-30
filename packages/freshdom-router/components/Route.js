@@ -1,5 +1,5 @@
 import fresh, {Component} from 'freshdom'
-import {events, fastdom, createInstance} from 'freshdom-utils'
+import {events, fastdom, FreshElement} from 'freshdom-utils'
 import PropTypes from 'freshdom-proptypes'
 
 import router from '../router'
@@ -41,7 +41,7 @@ export default class Route extends Component {
         component = this.props.renders()
       }
       
-      const componentRef = createInstance(component, props)
+      const componentRef = FreshElement(component, props)
 
       this.setState({
         componentRef,

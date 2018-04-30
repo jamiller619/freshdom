@@ -1,9 +1,10 @@
 import events from './events'
-import createInstance from './create-instance'
+import {isFreshElement, FreshElement} from './fresh-element'
 import fastdom from './fastdom'
 
 export {
   events,
-  createInstance,
+  FreshElement,
+  isFreshElement,
   fastdom
 }

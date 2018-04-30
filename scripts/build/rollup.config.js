@@ -46,7 +46,8 @@ const generateConfig = (input, output, options = {}) => {
       input: input,
       output: {
         file: output,
-        format: 'es',
+        format: 'cjs',
+        // format: 'es',
         // sourcemap: true,
         interop: false
       },

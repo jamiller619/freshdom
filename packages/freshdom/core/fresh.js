@@ -2,11 +2,10 @@ import { events } from 'freshdom-utils'
 
 import redom from './redom'
 import registry from './registry'
-import * as freshType from './types/fresh'
 
-const FreshElement = function FreshElement() {}
+const FreshComponent = function FreshComponent() {}
 
-Object.defineProperties(FreshElement.prototype, {
+Object.defineProperties(FreshComponent.prototype, {
   /**
    * Lifecycle callbacks as defined by the Custom Element spec
    */
@@ -89,10 +88,6 @@ Object.defineProperties(FreshElement.prototype, {
   /**
    * Private properties and methods
    */
-  $$__type: {
-    value: freshType.element
-  },
-
   $$__state: {
     configurable: true,
     value: Object.freeze({})
@@ -175,7 +170,7 @@ export const Fresh = (HTMLInterface = window.HTMLElement) => {
 
   Object.defineProperties(
     Element.prototype,
-    Object.getOwnPropertyDescriptors(FreshElement.prototype)
+    Object.getOwnPropertyDescriptors(FreshComponent.prototype)
   )
 
   return Element

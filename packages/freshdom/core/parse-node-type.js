@@ -1,4 +1,4 @@
-import { createInstance } from 'freshdom-utils'
+import { FreshElement } from 'freshdom-utils'
 
 import XMLNamespace from './types/xml-namespaces'
 import SVGNodes from './types/svg-nodes'
@@ -16,17 +16,7 @@ const NodeTypes = {
 
   Func: node => {
     if (typeof node === 'function') {
-      return props => createInstance(node, props)
-    }
-  },
-
-  Array: node => {
-    if (Array.isArray(node)) {
-      return () => {
-        const container = document.createDocumentFragment()
-        container.append(...node)
-        return container
-      }
+      return props => FreshElement(node, props)
     }
   },
 
@@ -41,6 +31,16 @@ const NodeTypes = {
       }
 
       return () => document.createTextNode(node)
+    }
+  },
+
+  Array: node => {
+    if (Array.isArray(node) || node instanceof HTMLCollection || node instanceof NodeList) {
+      return () => {
+        const container = document.createDocumentFragment()
+        container.append(...node)
+        return container
+      }
     }
   }
 }

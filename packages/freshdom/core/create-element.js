@@ -1,5 +1,6 @@
-import parseNodeType from './parse-node-type'
+import { isFreshElement } from 'freshdom-utils'
 
+import parseNodeType from './parse-node-type'
 import HTMLAttributes from './types/html-attributes'
 import SVGAttributes from './types/svg-attributes'
 
@@ -11,19 +12,23 @@ import SVGAttributes from './types/svg-attributes'
  * @param {...createElement} children
  * @return {HTMLElement}
  */
-// export default (type, props, ...children) => {
-
-// }
-
 export default (type, props, ...children) => {
   props = props || {}
 
-  props.children = Object.freeze(...children)
+  // props.children = children.map(childNode => parseNodeType(childNode))
+  props.children = children
 
-  return appendChildren(
-    setNodeAttributes(parseNodeType(type, props), props),
-    ...children
-  )
+  const element = setNodeAttributes(parseNodeType(type, props), props)
+
+  /**
+   * If the newly created element is a Fresh element, we delegate
+   * the responsibility of rendering its children to the component
+   */
+  if (isFreshElement(element)) {
+    return element
+  }
+
+  return appendChildren(element, ...children)
 }
 
 const appendChildren = (host, ...children) => {
@@ -31,13 +36,23 @@ const appendChildren = (host, ...children) => {
     return host
   }
 
-  // const freshChildNodes = children.filter(node => node.$$__type && node.$$__type === freshType.element)
+  // host.append(...children)
   const childNodes = children.map(childNode => parseNodeType(childNode))
 
   host.append(...childNodes)
 
   return host
 }
+
+// const parseChildren = (...children) => {
+//   const parsedChildren = children.map(childNode => parseNodeType(childNode))
+
+//   return appendChildren(document.createDocumentFragment(), ...parsedChildren)
+//     .childNodes
+// }
+
+const normalizeEventName = eventName =>
+  eventName.replace('on', '').toLowerCase()
 
 /**
  * Filters a `prop` object for valid HTML attributes and sets them on a node
@@ -48,7 +63,7 @@ const appendChildren = (host, ...children) => {
  */
 const setNodeAttributes = (node, props) => {
   filterEventAttributes(props).forEach(event => {
-    node.addEventListener(event, props[event])
+    node.addEventListener(normalizeEventName(event), props[event])
   })
 
   filterNodeAttributes(props).forEach(attr => {
