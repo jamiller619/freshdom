@@ -8,14 +8,16 @@ import { isTemplate } from './types/is-html'
  * Compares and then modifies and adapts a collection of nodes onto a host.
  *
  * @param {HTMLElement} host
- * @param {HTMLElement} content
+ * @param {HTMLElement[]} content
  * @returns {HTMLElement}
  */
-export default async(host, content) => {
-  content = isTemplate(content) ? fragmentWrap(...content.childNodes) : content
+export default (host, content) => {
+  const wrappedContent = fragmentWrap(content)
+
+  // return merge(host, wrappedContent)
 
   return fastdom.mutate(
-    async() => renderComplete(merge(host, content))
+    async () => await renderComplete(merge(host, wrappedContent))
   )
 }
 
@@ -27,11 +29,13 @@ export default async(host, content) => {
  * @returns {HTMLElement}
  */
 const merge = (host, content) => {
-  // Only morph the DOM if the host has content
-  if (host.firstChild) {
-    return morphdom(host, content)
+  // Only morph if the container has children
+  if (host.childNodes.length > 0) {
+    return morphdom(host, content, {
+      childrenOnly: true
+    })
   }
-  
+
   host.append(content)
 
   return host
@@ -43,7 +47,7 @@ const merge = (host, content) => {
  * @param {HTMLElement} content
  * @returns {HTMLDocumentFragment}
  */
-const fragmentWrap = (...content) => {
+const fragmentWrap = content => {
   const wrapper = document.createDocumentFragment()
   wrapper.append(...content)
   return wrapper
@@ -73,7 +77,7 @@ const renderComplete = async context => {
     return Promise.resolve()
   }
 
-  return Promise.all(
+  return await Promise.all(
     freshChildren.map(async child => addRenderingCompleteListener(child))
   )
 }
@@ -90,7 +94,7 @@ const addRenderingCompleteListener = async freshComponent => {
       resolve()
     }
 
-    freshComponent.addEventListener('onattach', handleAttachEvent, {
+    freshComponent.addEventListener('rendercomplete', handleAttachEvent, {
       once: true,
       passive: true
     })

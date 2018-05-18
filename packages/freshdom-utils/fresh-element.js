@@ -2,6 +2,7 @@ const freshElementType = Symbol('fresh.element')
 
 const assignType = el => {
   return Object.defineProperty(el, '$$__type', {
+    configurable: true,
     value: freshElementType
   })
 }

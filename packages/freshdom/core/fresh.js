@@ -1,6 +1,6 @@
 import { events } from 'freshdom-utils'
 
-import redom from './redom'
+import mergeDOM from './merge-dom'
 import registry from './registry'
 
 const FreshComponent = function FreshComponent() {}
@@ -11,8 +11,9 @@ Object.defineProperties(FreshComponent.prototype, {
    */
   connectedCallback: {
     value: async function() {
-      await events.trigger(this, events.type.onBeforeAttach)
-      await this.forceRefresh()
+      await events.trigger(this, events.type.beforeRender)
+      await this.renderUpdate()
+
       this.isAttached = true
       await events.trigger(this, events.type.onAttach)
     }
@@ -27,7 +28,7 @@ Object.defineProperties(FreshComponent.prototype, {
 
   attributeChangedCallback: {
     value: async function() {
-      await this.forceRefresh()
+      await this.renderUpdate()
     }
   },
 
@@ -43,10 +44,11 @@ Object.defineProperties(FreshComponent.prototype, {
     get: function() {
       return this.$$__state
     },
-    set: function() {
-      throw new Error(
-        'Component state is immutable and cannot be used as a setter. Use "setState" instead.'
-      )
+    set: function(value) {
+      // TODO: Add warning/error if $$__state has already been populated
+      Object.defineProperty(this, '$$__state', {
+        value: value
+      })
     }
   },
 
@@ -54,103 +56,62 @@ Object.defineProperties(FreshComponent.prototype, {
    * Public methods
    */
   setState: {
-    value: async function(...args) {
-      const { state, shouldRender, callback } = parseSetStateArguments(...args)
+    value: async function(state, callback) {
+      const prevState = this.state
+      const newState = clone(prevState, state)
 
-      const prevState = clone(this.state)
-      const newState = clone(this.state, state)
-
-      Object.defineProperty(Object.getPrototypeOf(this), '$$__state', {
+      Object.defineProperty(this, '$$__state', {
         configurable: true,
         value: newState
       })
 
-      if (shouldRender === true) {
-        await this.forceRefresh()
-      }
+      await this.renderUpdate()
 
       if (callback) {
-        return callback.call(this, prevState, this.props)
+        callback.call(this, prevState, this.props)
       }
     }
   },
 
-  forceRefresh: {
+  renderUpdate: {
     value: async function() {
-      if (this.render && typeof this.render === 'function') {
-        const children = await this.render()
-        await redom(this, children)
-        await events.trigger(this, events.type.onRenderComplete)
-      }
-    }
-  },
+      let content =
+        await (this.render && typeof this.render === 'function'
+          ? this.render()
+          : this.props.children)
 
-  /**
-   * Private properties and methods
-   */
-  $$__state: {
-    configurable: true,
-    value: Object.freeze({})
+      if (!Array.isArray(content)) {
+        content = Array.of(content)
+      }
+
+      await mergeDOM(this, content)
+    }
   }
 })
 
 /**
  * Mostly truly private methods
  */
-const parseSetStateArguments = (...args) => {
-  if (args.length > 2) {
-    throw new Error(
-      `Invalid number of arguments passed to setState. Expected a maximum of 3 but received: ${
-        args.length
-      }.`
-    )
-  }
+const clone = (target, ...sources) => Object.assign({}, target, ...sources)
 
-  const result = {
-    state: {},
-    shouldRender: false,
-    callback: undefined
-  }
+const createStateProps = (inst, props) => {
+  Object.defineProperties(inst, {
+    props: {
+      configurable: true,
+      value: props
+    },
+    $$__state: {
+      configurable: true,
+      value: {}
+    }
+  })
 
-  // The first item is always the new state
-  result.state = args[0]
-
-  // The second item can either be:
-  //  a callback function or
-  //  a boolean to re-render the component
-  const additionalArgs = args.slice(1)
-  for (let i of additionalArgs) {
-    Object.assign(result.state, parseSetStateAdditionalArgument(i))
-  }
-
-  return result
-}
-
-const parseSetStateAdditionalArgument = arg => {
-  if (typeof arg === 'function') {
-    return { callback: arg }
-  }
-
-  if (typeof arg === 'boolean') {
-    return { shouldRender: arg }
-  }
-
-  throw new Error(
-    `Invalid argument passed to setState. Expected a callback function or boolean to indicate a re-render. Instead received: "${typeof arg}"`
-  )
-}
-
-const clone = (obj, ...additionalObjects) =>
-  Object.assign({}, obj, ...additionalObjects)
-
-const createProps = (inst, props) => {
-  inst.props = Object.freeze(props)
   return inst
 }
 
 const define = (ctor, props = {}) => {
   registry.define(ctor.tag, ctor)
-  return inst => createProps(inst, props)
+  return inst => createStateProps(inst, props)
 }
 
 /**

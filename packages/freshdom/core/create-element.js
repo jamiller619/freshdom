@@ -1,6 +1,6 @@
 import { isFreshElement } from 'freshdom-utils'
 
-import parseNodeType from './parse-node-type'
+import validateNode from './validate-node'
 import HTMLAttributes from './types/html-attributes'
 import SVGAttributes from './types/svg-attributes'
 
@@ -15,41 +15,31 @@ import SVGAttributes from './types/svg-attributes'
 export default (type, props, ...children) => {
   props = props || {}
 
-  // props.children = children.map(childNode => parseNodeType(childNode))
+  if (
+    children.length === 1 &&
+    Array.isArray(children[0]) &&
+    children[0].length > 0
+  ) {
+    children = children[0]
+  }
+
   props.children = children
 
-  const element = setNodeAttributes(parseNodeType(type, props), props)
+  const element = setNodeAttributes(validateNode(type, props), props)
 
   /**
    * If the newly created element is a Fresh element, we delegate
-   * the responsibility of rendering its children to the component
+   * the responsibility of rendering its children to the component,
+   * so return it now before attaching any child nodes.
    */
   if (isFreshElement(element)) {
     return element
   }
 
-  return appendChildren(element, ...children)
+  element.append(...children.map(childNode => validateNode(childNode)))
+
+  return element
 }
-
-const appendChildren = (host, ...children) => {
-  if (children.length === 0) {
-    return host
-  }
-
-  // host.append(...children)
-  const childNodes = children.map(childNode => parseNodeType(childNode))
-
-  host.append(...childNodes)
-
-  return host
-}
-
-// const parseChildren = (...children) => {
-//   const parsedChildren = children.map(childNode => parseNodeType(childNode))
-
-//   return appendChildren(document.createDocumentFragment(), ...parsedChildren)
-//     .childNodes
-// }
 
 const normalizeEventName = eventName =>
   eventName.replace('on', '').toLowerCase()

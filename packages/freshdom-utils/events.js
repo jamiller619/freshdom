@@ -1,7 +1,6 @@
 const type = {
   render: 'render',
-  onRenderComplete: 'onRenderComplete',
-  onBeforeAttach: 'onBeforeAttach',
+  beforeRender: 'beforeRender',
   onAttach: 'onAttach',
   onDetach: 'onDetach'
 }

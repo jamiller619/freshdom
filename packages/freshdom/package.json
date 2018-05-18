@@ -15,7 +15,6 @@
     "url": "https://github.com/jamiller619/freshdom.git"
   },
   "dependencies": {
-    "deep-equal": "^1.0.1",
     "morphdom": "^2.3.3",
     "freshdom-utils": "file:../../dist/freshdom-utils"
   }
