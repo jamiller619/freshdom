@@ -78,12 +78,16 @@ const setNodeAttribute = (node, key, value) => {
 
   if (typeof value === 'object') {
     Object.assign(node[attributeKey], value)
-  }
-
-  if (value === true) {
+  } else if (value === true) {
     node.setAttribute(attributeKey, '')
   } else if (value !== false && value !== null) {
-    node.setAttribute(attributeKey, value)
+    if (attributeKey === 'class') {
+      // Special case for classes where we want to
+      // append new values with what's already there
+      node.classList.add(...value.split(' '))
+    } else {
+      node.setAttribute(attributeKey, value)
+    }
   }
 }
 
