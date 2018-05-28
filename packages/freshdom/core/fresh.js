@@ -1,6 +1,8 @@
 import { events } from 'freshdom-utils'
+import deepEqual from 'deep-equal'
 
-import mergeDOM from './merge-dom'
+import syncdom from './sync-dom'
+import { isTemplate } from './types/is-html'
 import registry from './registry'
 
 const FreshComponent = function FreshComponent() {}
@@ -45,8 +47,8 @@ Object.defineProperties(FreshComponent.prototype, {
       return this.$$__state
     },
     set: function(value) {
-      // TODO: Add warning/error if $$__state has already been populated
       Object.defineProperty(this, '$$__state', {
+        configurable: true,
         value: value
       })
     }
@@ -56,8 +58,8 @@ Object.defineProperties(FreshComponent.prototype, {
    * Public methods
    */
   setState: {
-    value: async function(state, callback) {
-      const prevState = this.state
+    value: async function(state) {
+      const prevState = this.$$__state
       const newState = clone(prevState, state)
 
       Object.defineProperty(this, '$$__state', {
@@ -66,25 +68,52 @@ Object.defineProperties(FreshComponent.prototype, {
       })
 
       await this.renderUpdate()
-
-      if (callback) {
-        callback.call(this, prevState, this.props)
-      }
     }
   },
 
   renderUpdate: {
     value: async function() {
-      let content =
-        await (this.render && typeof this.render === 'function'
-          ? this.render()
-          : this.props.children)
-
-      if (!Array.isArray(content)) {
-        content = Array.of(content)
+      if (this.shouldRender() === false) {
+        return
       }
 
-      await mergeDOM(this, content)
+      const content = await this.render()
+
+      await syncdom(this, content, {
+        onBeforeElUpdated(fromEl, toEl) {
+          if (fromEl.$$__type && fromEl.shouldRender) {
+            return fromEl.shouldRender(fromEl, toEl)
+          }
+        }
+      })
+
+      await events.trigger(this, events.type.renderComplete)
+    }
+  },
+
+  /**
+   * Only render an element if its state and props haven't
+   * changed since its last render.
+   */
+  shouldRender: {
+    value: function(fromEl, toEl) {
+      if (this.render && typeof this.render === 'function') {
+        if (!toEl) {
+          return true
+        }
+
+        if (
+          fromEl.$$__state &&
+          toEl.$$__state &&
+          deepEqual(fromEl.state, toEl.state) === false
+        ) {
+          return true
+        }
+
+        return deepEqual(fromEl.props, toEl.props) === false
+      }
+
+      return false
     }
   }
 })
@@ -94,24 +123,24 @@ Object.defineProperties(FreshComponent.prototype, {
  */
 const clone = (target, ...sources) => Object.assign({}, target, ...sources)
 
-const createStateProps = (inst, props) => {
+const createStateProps = (inst, ...props) => {
   Object.defineProperties(inst, {
     props: {
       configurable: true,
-      value: props
-    },
-    $$__state: {
-      configurable: true,
-      value: {}
+      value: Object.assign({}, ...props)
     }
   })
 
   return inst
 }
 
-const define = (ctor, props = {}) => {
+const define = (ctor, ...props) => {
   registry.define(ctor.tag, ctor)
-  return inst => createStateProps(inst, props)
+}
+
+const init = (ctor, ...props) => {
+  define(ctor, ...props)
+  return inst => createStateProps(inst, ...props)
 }
 
 /**
@@ -124,8 +153,8 @@ const define = (ctor, props = {}) => {
  */
 export const Fresh = (HTMLInterface = window.HTMLElement) => {
   class Element extends HTMLInterface {
-    constructor(props = {}) {
-      define(new.target, props)(super())
+    constructor(...props) {
+      init(new.target, ...props)(super())
     }
   }
 

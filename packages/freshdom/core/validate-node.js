@@ -55,7 +55,6 @@ export default (type, props) => {
   if (index >= 0) {
     return validators[index].parse(type, props)
   } else {
-    console.dir(type)
     throw new Error(
       `Couldn't create element. Expected either a valid HTML element name, an Array or a Function, but instead received: "${typeof type}"`
     )
