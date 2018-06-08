@@ -36,7 +36,9 @@ export default (type, props, ...children) => {
     return element
   }
 
-  element.append(...children.map(childNode => validateNode(childNode)))
+  const renderedChildren = children.map(childNode => validateNode(childNode))
+  
+  element.append(...renderedChildren)
 
   return element
 }
@@ -80,7 +82,7 @@ const setNodeAttribute = (node, key, value) => {
     Object.assign(node[attributeKey], value)
   } else if (value === true) {
     node.setAttribute(attributeKey, '')
-  } else if (value !== false && value !== null) {
+  } else if (value !== false && value != null) {
     if (attributeKey === 'class') {
       // Special case for classes where we want to
       // append new values with what's already there

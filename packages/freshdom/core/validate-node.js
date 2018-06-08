@@ -1,4 +1,4 @@
-import { FreshElement } from 'freshdom-utils'
+import { FreshElement, isFreshElement } from 'freshdom-utils'
 
 import XMLNamespace from './types/xml-namespaces'
 import SVGNodes from './types/svg-nodes'
@@ -38,25 +38,26 @@ const validators = [
       node instanceof HTMLCollection ||
       node instanceof NodeList,
     parse: nodes => {
-      return nodes.map(node => {
-        if (isElement(node)) {
-          return node
-        }
-      })
+      const host = document.createDocumentFragment()
+      const valid = nodes.map(node => validateNode(node))
+      
+      host.append(...valid)
+      
+      return host
     }
   }
 ]
 
-export default (type, props) => {
+export default validateNode = (type, props) => {
   const index = validators.findIndex(validator =>
     validator.check(type)
   )
 
   if (index >= 0) {
     return validators[index].parse(type, props)
-  } else {
-    throw new Error(
-      `Couldn't create element. Expected either a valid HTML element name, an Array or a Function, but instead received: "${typeof type}"`
-    )
-  }
+  } //else {
+  //   throw new Error(
+  //     `Couldn't create element. Expected either a valid HTML element name, an Array or a Function, but instead received: "${typeof type}"`
+  //   )
+  // }
 }

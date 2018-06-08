@@ -15,7 +15,7 @@ export default async (host, content, options) => {
 
   const wrappedContent = fragmentWrap(content)
 
-  return await fastdom.mutate(() => sync(host, wrappedContent, options))
+  return await sync(host, wrappedContent, options)
 }
 
 /**
@@ -30,17 +30,19 @@ export default async (host, content, options) => {
  */
 const sync = async (host, content, options) => {
   // Only morph if the container has children
-  if (host.childNodes.length > 0) {
-    const defaults = {
-      childrenOnly: true
-    }
-
-    return morphdom(host, content, Object.assign(defaults, options))
+  if (host.childElementCount > 0) {
+    await fastdom.mutate(() =>
+      morphdom(host, content, Object.assign(morphdomDefaultOptions, options))
+    )
+  } else {
+    host.append(content)
   }
 
-  host.append(content)
-
   return host
+}
+
+const morphdomDefaultOptions = {
+  childrenOnly: true
 }
 
 /**

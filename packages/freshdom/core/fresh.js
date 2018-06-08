@@ -1,7 +1,7 @@
-import { events } from 'freshdom-utils'
+import { events, freshdomType } from 'freshdom-utils'
 import deepEqual from 'deep-equal'
 
-import syncdom from './sync-dom'
+import domsync from './dom-sync'
 import { isTemplate } from './types/is-html'
 import registry from './registry'
 
@@ -37,6 +37,10 @@ Object.defineProperties(FreshComponent.prototype, {
   /**
    * Public properties
    */
+  $$__type: {
+    value: freshdomType
+  },
+
   isAttached: {
     writable: true,
     value: false
@@ -71,21 +75,28 @@ Object.defineProperties(FreshComponent.prototype, {
     }
   },
 
+  hasRendered: {
+    writable: true,
+    value: false
+  },
+
   renderUpdate: {
     value: async function() {
-      if (this.shouldRender() === false) {
-        return
+      if (this.shouldRenderUpdate() === false) {
+        return false
       }
 
       const content = await this.render()
 
-      await syncdom(this, content, {
+      await domsync(this, content, {
         onBeforeElUpdated(fromEl, toEl) {
-          if (fromEl.$$__type && fromEl.shouldRender) {
-            return fromEl.shouldRender(fromEl, toEl)
+          if (fromEl.$$__type) {
+            return fromEl.shouldRenderUpdate(fromEl, toEl)
           }
         }
       })
+
+      this.hasRendered = true
 
       await events.trigger(this, events.type.renderComplete)
     }
@@ -93,12 +104,12 @@ Object.defineProperties(FreshComponent.prototype, {
 
   /**
    * Only render an element if its state and props haven't
-   * changed since its last render.
+   * changed since last render.
    */
-  shouldRender: {
+  shouldRenderUpdate: {
     value: function(fromEl, toEl) {
       if (this.render && typeof this.render === 'function') {
-        if (!toEl) {
+        if (!toEl || this.hasRendered === false) {
           return true
         }
 
