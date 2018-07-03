@@ -7,9 +7,9 @@ import { isElement } from './types/is-html'
 
 const validators = [
   {
-    // HTML/SVG Element
+    // HTML/SVG/Custom Element
     check: node => isElement(node),
-    parse: node => node
+    parse: node => typeof node === 'string' ? document.createElement(node) : node
   },
   {
     // Function

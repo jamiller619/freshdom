@@ -31,8 +31,11 @@ export default async (host, content, options) => {
 const sync = async (host, content, options) => {
   // Only morph if the container has children
   if (host.childElementCount > 0) {
+    const opts = Object.assign(morphdomDefaultOptions, options)
+    console.dir(opts)
+
     await fastdom.mutate(() =>
-      morphdom(host, content, Object.assign(morphdomDefaultOptions, options))
+      morphdom(host, content, opts)
     )
   } else {
     host.append(content)

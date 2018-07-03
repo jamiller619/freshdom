@@ -15,15 +15,7 @@ import SVGAttributes from './types/svg-attributes'
 export default (type, props, ...children) => {
   props = props || {}
 
-  if (
-    children.length === 1 &&
-    Array.isArray(children[0]) &&
-    children[0].length > 0
-  ) {
-    children = children[0]
-  }
-
-  props.children = children
+  props.children = children.map(child => Array.isArray(child) ? child[0] : child)
 
   const element = setNodeAttributes(validateNode(type, props), props)
 
@@ -37,7 +29,6 @@ export default (type, props, ...children) => {
   }
 
   const renderedChildren = children.map(childNode => validateNode(childNode))
-  
   element.append(...renderedChildren)
 
   return element
@@ -58,9 +49,15 @@ const setNodeAttributes = (node, props) => {
     node.addEventListener(normalizeEventName(event), props[event])
   })
 
-  filterNodeAttributes(props).forEach(attr => {
-    setNodeAttribute(node, attr, props[attr])
-  })
+  if (node.tagName && node.tagName.includes('-')) {
+    Array.from(props).filter(prop => !prop.startsWith('on')).forEach(prop => {
+      setNodeAttribute(node, prop, props[prop])
+    })
+  } else {
+    filterNodeAttributes(props).forEach(attr => {
+      setNodeAttribute(node, attr, props[attr])
+    })
+  }
 
   return node
 }
@@ -79,7 +76,8 @@ const setNodeAttribute = (node, key, value) => {
   }
 
   if (typeof value === 'object') {
-    Object.assign(node[attributeKey], value)
+    node.setAttribute(attributeKey, JSON.stringify(value))
+    // Object.assign(node[attributeKey], value)
   } else if (value === true) {
     node.setAttribute(attributeKey, '')
   } else if (value !== false && value != null) {

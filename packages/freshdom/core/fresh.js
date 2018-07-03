@@ -13,7 +13,7 @@ Object.defineProperties(FreshComponent.prototype, {
    */
   connectedCallback: {
     value: async function() {
-      await events.trigger(this, events.type.beforeRender)
+      await events.trigger(this, events.type.onBeforeRender)
       await this.renderUpdate()
 
       this.isAttached = true
@@ -87,6 +87,7 @@ Object.defineProperties(FreshComponent.prototype, {
       }
 
       const content = await this.render()
+      await renderChildren(content)
 
       await domsync(this, content, {
         onBeforeElUpdated(fromEl, toEl) {
@@ -98,7 +99,7 @@ Object.defineProperties(FreshComponent.prototype, {
 
       this.hasRendered = true
 
-      await events.trigger(this, events.type.renderComplete)
+      await events.trigger(this, events.type.onRenderComplete)
     }
   },
 
@@ -128,6 +129,31 @@ Object.defineProperties(FreshComponent.prototype, {
     }
   }
 })
+
+const renderChildren = content => {
+  if (!Array.isArray(content)) {
+    content = Array.of(content)
+  }
+
+  return Promise.all(
+    content.filter(c => c !== undefined).map(child => new Promise(resolve => {
+      if (child.$$__type && child.isAttached === false) {
+        // child.addEventListener('rendercomplete', {once: true}, () => resolve())
+        // console.log(JSON.stringify(child.isRendering))
+        child.renderUpdate().then(resolve)
+      } else {
+        resolve()
+      }
+    }))
+    // content.map(child => new Promise(resolve => {
+    //   if (child.$$__type && child.hasRendered === false) {
+    //     child.renderUpdate().then(resolve)
+    //   } else {
+    //     resolve()
+    //   }
+    // })
+  )
+}
 
 /**
  * Mostly truly private methods
